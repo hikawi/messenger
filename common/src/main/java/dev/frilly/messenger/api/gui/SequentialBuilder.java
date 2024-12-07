@@ -15,7 +15,7 @@ public final class SequentialBuilder extends AbstractGroupBuilder {
      * Constructs a new horizontal group builder from a layout builder.
      * This should be constructed from the LayoutBuilder class itself.
      *
-     * @param caller The builder
+     * @param group The builder
      */
     SequentialBuilder(final SequentialGroup group) {
         this.group = group;
