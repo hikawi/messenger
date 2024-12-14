@@ -7,19 +7,46 @@ import javax.swing.*;
  */
 public final class Components {
 
-    private Components() {
-        // Intentionally left blank.
-    }
+  /**
+   * The magic property string for FlatLaf.
+   */
+  public static String FLATLAF = "FlatLaf.styleClass";
 
-    /**
-     * Constructs a new label.
-     *
-     * @param value the value
-     *
-     * @return the label builder
-     */
-    public static LabelBuilder label(final String value) {
-        return new LabelBuilder(new JLabel(value));
-    }
+  private Components() {
+    // Intentionally left blank.
+  }
+
+  /**
+   * Constructs a new label.
+   *
+   * @param value the value
+   *
+   * @return the label builder
+   */
+  public static LabelBuilder label(final String value) {
+    return new LabelBuilder(new JLabel(value));
+  }
+
+  /**
+   * Constructs a new button.
+   *
+   * @param value the value
+   *
+   * @return the button builder
+   */
+  public static ButtonBuilder button(final String value) {
+    return new ButtonBuilder(new JButton(value));
+  }
+
+  /**
+   * Constructs a new text field.
+   *
+   * @param value the value
+   *
+   * @return the text field builder
+   */
+  public static TextFieldBuilder textField(final String value) {
+    return new TextFieldBuilder(new JTextField(value));
+  }
 
 }
