@@ -19,7 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
  * The controllers for handling accounts management of a user.
  */
 @RestController
-public class AccountsController {
+public final class AccountsController {
 
   @Autowired
   private JwtService jwtService;
@@ -35,6 +35,7 @@ public class AccountsController {
    */
   @PostMapping("/login")
   public LoginResponse login(@RequestBody PostLoginBody body) {
+    System.out.println("login");
     final var account = accountRepository.findByUsername(body.getUsername());
     if (account == null) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND);

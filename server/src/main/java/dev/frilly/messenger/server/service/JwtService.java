@@ -14,8 +14,9 @@ import java.util.Date;
 public class JwtService {
 
   // I don't care lmao.
-  private final SecretKey key = new SecretKeySpec("hcmus".getBytes(),
-      "HMACSHA256");
+  private final SecretKey key = new SecretKeySpec(
+      "tP7k3lA0jV/J3A34mV8mQyLt9G5jJ+jp+YzyEj6azH2CV34J14g3c9j0/38VhO+a".getBytes(),
+      "HMACSHA512");
 
   /**
    * Generates a JWT from an account's id.
@@ -28,7 +29,7 @@ public class JwtService {
     return Jwts.builder()
         .claim("id", id)
         .expiration(new Date(System.currentTimeMillis() + 120 * 60 * 1000))
-        .signWith(key)
+        .signWith(key, Jwts.SIG.HS512)
         .compact();
   }
 

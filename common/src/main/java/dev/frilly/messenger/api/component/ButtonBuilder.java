@@ -57,18 +57,6 @@ public class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
   }
 
   /**
-   * Sets the button's icon gap.
-   *
-   * @param size the size
-   *
-   * @return this
-   */
-  public ButtonBuilder iconGap(final int size) {
-    this.button.setIconTextGap(size);
-    return this;
-  }
-
-  /**
    * Sets the icon of this button.
    *
    * @param icon the icon
@@ -78,6 +66,18 @@ public class ButtonBuilder extends ComponentBuilder<ButtonBuilder> {
    */
   public ButtonBuilder icon(final Icon icon, final int size) {
     this.button.setIcon(IconsManager.icon(icon));
+    return this.iconGap(size / 2);
+  }
+
+  /**
+   * Sets the button's icon gap.
+   *
+   * @param size the size
+   *
+   * @return this
+   */
+  public ButtonBuilder iconGap(final int size) {
+    this.button.setIconTextGap(size);
     return this;
   }
 

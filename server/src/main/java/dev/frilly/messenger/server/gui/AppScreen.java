@@ -78,9 +78,8 @@ public final class AppScreen extends JPanel {
         throw new RuntimeException(e);
       }
 
-      new SpringApplicationBuilder(Entrypoint.class).headless(false)
-          .build()
-          .run();
+      final var app = new SpringApplicationBuilder(Entrypoint.class).headless(
+          false).build().run();
     }).start();
 
     testConnection.addActionListener(e -> {

@@ -39,6 +39,15 @@ public final class Components {
   }
 
   /**
+   * Constructs a new empty text field.
+   *
+   * @return the text field builder
+   */
+  public static TextFieldBuilder textField() {
+    return textField("");
+  }
+
+  /**
    * Constructs a new text field.
    *
    * @param value the value
@@ -47,6 +56,15 @@ public final class Components {
    */
   public static TextFieldBuilder textField(final String value) {
     return new TextFieldBuilder(new JTextField(value));
+  }
+
+  /**
+   * Constructs a new empty password field.
+   *
+   * @return the password field builder.
+   */
+  public static PasswordFieldBuilder passwordField() {
+    return new PasswordFieldBuilder(new JPasswordField());
   }
 
 }

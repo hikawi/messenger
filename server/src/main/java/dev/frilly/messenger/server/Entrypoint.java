@@ -3,10 +3,9 @@ package dev.frilly.messenger.server;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import dev.frilly.messenger.api.ApplicationFrame;
 import dev.frilly.messenger.server.gui.WelcomeScreen;
+import dev.frilly.messenger.server.service.JwtService;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.ComponentScans;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.swing.*;
@@ -15,7 +14,6 @@ import javax.swing.*;
  * Main entrypoint of the server side.
  */
 @SpringBootApplication
-@ComponentScans(@ComponentScan("dev.frilly.messenger.server.controllers"))
 public class Entrypoint {
 
   /**
@@ -46,6 +44,16 @@ public class Entrypoint {
   @Bean
   public BCryptPasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
+  }
+
+  /**
+   * A Spring bean for the JWT service.
+   *
+   * @return the service
+   */
+  @Bean
+  public JwtService jwtService() {
+    return new JwtService();
   }
 
 }

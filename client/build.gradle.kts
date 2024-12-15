@@ -2,6 +2,7 @@ plugins {
     id("java")
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.freefair.lombok") version "8.11"
+    application
 }
 
 group = "dev.frilly"
@@ -20,9 +21,16 @@ dependencies {
     implementation("com.formdev:flatlaf-intellij-themes:3.5.2")
 }
 
+application {
+    mainClass.set("dev.frilly.messenger.client.Entrypoint")
+}
+
 tasks.jar {
     layout.buildDirectory.set(file("../build/client"))
     destinationDirectory.set(file("../build/client/libs"))
+    manifest {
+        attributes("Main-Class" to "dev.frilly.messenger.client.Entrypoint")
+    }
 }
 
 java {

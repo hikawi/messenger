@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -19,6 +22,7 @@ public final class HttpFetch {
   private final String              originalURI;
   private final Map<String, String> query   = new HashMap<>();
   private final Map<String, String> headers = new HashMap<>();
+  private final Map<String, Object> body    = new HashMap<>();
 
   @SneakyThrows
   private HttpFetch(final String uri) {
@@ -64,6 +68,19 @@ public final class HttpFetch {
   }
 
   /**
+   * Appends a key-value pair to the body.
+   *
+   * @param key   the key
+   * @param value the value
+   *
+   * @return this
+   */
+  public HttpFetch body(final String key, final Object value) {
+    body.put(key, value);
+    return this;
+  }
+
+  /**
    * Makes a GET request.
    */
   @SneakyThrows
@@ -95,6 +112,43 @@ public final class HttpFetch {
     final var conn = (HttpURLConnection) url.openConnection();
     headers.forEach(conn::setRequestProperty);
     return conn;
+  }
+
+  /**
+   * Makes a POST request
+   */
+  @SneakyThrows
+  public HttpResponse post() {
+    final var conn   = connect();
+    final var mapper = new ObjectMapper();
+
+    try {
+      // Open connection
+      conn.setRequestMethod("POST");
+      conn.setRequestProperty("Content-Type", "application/json");
+      conn.setDoOutput(true);
+
+      // Write request body
+      try (OutputStream out = new BufferedOutputStream(conn.getOutputStream())
+      ) {
+        mapper.writeValue(out, body);
+      }
+
+      // Read response
+      int responseCode = conn.getResponseCode();
+      InputStream responseStream = (responseCode >= 200 && responseCode < 300)
+                                   ? conn.getInputStream() // Success
+                                   : conn.getErrorStream(); // Error
+
+      try (InputStream in = new BufferedInputStream(responseStream)) {
+        var resBody = mapper.readTree(in);
+        return new HttpResponse(responseCode, resBody);
+      }
+    } finally {
+      if (conn != null) {
+        conn.disconnect(); // Clean up connection
+      }
+    }
   }
 
 }

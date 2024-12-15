@@ -7,7 +7,7 @@ import lombok.Getter;
  */
 public enum Icon {
 
-  WIFI;
+  WIFI, START, CLOSE, LOGIN, REGISTER;
 
   @Getter
   private final String value;

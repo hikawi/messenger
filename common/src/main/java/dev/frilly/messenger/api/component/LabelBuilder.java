@@ -1,6 +1,7 @@
 package dev.frilly.messenger.api.component;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * A builder for {@link javax.swing.JLabel}.
@@ -12,6 +13,18 @@ public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
   LabelBuilder(final JLabel label) {
     super(label);
     this.label = label;
+  }
+
+  /**
+   * Sets the foreground color of the label.
+   *
+   * @param color the color
+   *
+   * @return this
+   */
+  public LabelBuilder fg(final Color color) {
+    label.setForeground(color);
+    return this;
   }
 
   /**

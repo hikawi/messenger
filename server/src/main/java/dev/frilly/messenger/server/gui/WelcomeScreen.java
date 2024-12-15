@@ -1,6 +1,7 @@
 package dev.frilly.messenger.server.gui;
 
 import dev.frilly.messenger.api.ApplicationFrame;
+import dev.frilly.messenger.api.Icon;
 import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import lombok.Cleanup;
@@ -45,20 +46,21 @@ public final class WelcomeScreen extends JPanel {
   private final JTextField userField   = Components.textField("")
       .showClear()
       .build();
-  private final JTextField passField   = Components.textField("")
-      .showClear()
-      .build();
+  private final JTextField passField   = Components.passwordField().build();
   private final JLabel     statusField = Components.label("NOT CONNECTED")
       .h3()
       .build();
 
   private final JButton tryButton   = Components.button("Try")
+      .icon(Icon.WIFI, 10)
       .rounded()
       .build();
   private final JButton quitButton  = Components.button("Quit")
+      .icon(Icon.CLOSE, 10)
       .rounded()
       .build();
   private final JButton startButton = Components.button("Start")
+      .icon(Icon.START, 10)
       .rounded()
       .build();
 
