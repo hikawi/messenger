@@ -4,8 +4,10 @@ import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import dev.frilly.messenger.api.ApplicationFrame;
 import dev.frilly.messenger.server.gui.WelcomeScreen;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScans;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.swing.*;
 
@@ -34,6 +36,16 @@ public class Entrypoint {
       final var welcomeScreen = new WelcomeScreen(serverFrame);
       serverFrame.display();
     });
+  }
+
+  /**
+   * A Spring bean for bCrypt encoder.
+   *
+   * @return the bean
+   */
+  @Bean
+  public BCryptPasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
   }
 
 }

@@ -52,8 +52,13 @@ public final class WelcomeScreen extends JPanel {
       .h3()
       .build();
 
-  private final JButton tryButton  = Components.button("Try").rounded().build();
-  private final JButton quitButton = Components.button("Quit")
+  private final JButton tryButton   = Components.button("Try")
+      .rounded()
+      .build();
+  private final JButton quitButton  = Components.button("Quit")
+      .rounded()
+      .build();
+  private final JButton startButton = Components.button("Start")
       .rounded()
       .build();
 
@@ -91,7 +96,12 @@ public final class WelcomeScreen extends JPanel {
                 .comp(userField)
                 .comp(passField)))
         .group(l.seq().comp(status).gap(8).comp(statusField))
-        .group(l.seq().comp(tryButton).gap(4).comp(quitButton)));
+        .group(l.seq()
+            .comp(tryButton)
+            .gap(4)
+            .comp(quitButton)
+            .gap(4)
+            .comp(startButton)));
 
     l.ver(l.seq()
         .comp(welcomeLabel)
@@ -106,13 +116,16 @@ public final class WelcomeScreen extends JPanel {
         .gap(8)
         .group(l.basePara().comp(status).comp(statusField))
         .gap(16)
-        .group(l.basePara().comp(tryButton).comp(quitButton)));
+        .group(
+            l.basePara().comp(tryButton).comp(quitButton).comp(startButton)));
 
     userField.setPreferredSize(new Dimension(300, 20));
     l.link(userField, hostField, portField, nameField, passField);
+    l.link(tryButton, quitButton, startButton);
   }
 
   private void setupActions() {
+    startButton.setEnabled(false);
     tryButton.addActionListener(e -> {
       tryButton.setEnabled(false);
 
@@ -122,6 +135,13 @@ public final class WelcomeScreen extends JPanel {
         final @Cleanup var conn = DriverManager.getConnection(url,
             userField.getText(), passField.getText());
         statusField.setText("Yay");
+
+        // Setup database property.
+        System.setProperty("db.url", url);
+        System.setProperty("db.username", userField.getText());
+        System.setProperty("db.password", passField.getText());
+
+        startButton.setEnabled(true);
       } catch (SQLException ex) {
         ex.printStackTrace();
         statusField.setText("Failed");
@@ -130,6 +150,7 @@ public final class WelcomeScreen extends JPanel {
       }
     });
 
+    startButton.addActionListener(e -> new AppScreen(frame));
     quitButton.addActionListener(e -> frame.quit());
   }
 

@@ -16,6 +16,7 @@ dependencies {
 
     implementation("com.formdev:flatlaf:3.5.2")
     implementation("com.formdev:flatlaf-intellij-themes:3.5.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
 }
 
 tasks.jar {

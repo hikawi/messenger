@@ -1,8 +1,11 @@
 package dev.frilly.messenger.server.models;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 
 /**
  * The user account.
@@ -11,11 +14,12 @@ import lombok.Data;
 @Entity
 public class Account {
 
-  public String username;
-
   @Id
-  public String email;
+  @GeneratedValue
+  @Setter(AccessLevel.NONE)
+  private long id;
 
-  public String password;
+  private String username;
+  private String password;
 
 }

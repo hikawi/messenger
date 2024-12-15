@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public final class HandshakeController {
 
-    /**
-     * Initiates a handshake to tell the client they're connecting to the
-     * correct server.
-     */
-    @GetMapping("handshake")
-    public ApiVersion handshake() {
-        return new ApiVersion("v1");
-    }
+  /**
+   * Initiates a handshake to tell the client they're connecting to the
+   * correct server.
+   */
+  @GetMapping("handshake")
+  public ApiVersion handshake() {
+    return new ApiVersion("v1");
+  }
 
 }
