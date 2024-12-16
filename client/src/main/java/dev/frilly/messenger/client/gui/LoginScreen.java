@@ -1,10 +1,10 @@
 package dev.frilly.messenger.client.gui;
 
-import dev.frilly.messenger.api.ApplicationFrame;
 import dev.frilly.messenger.api.Icon;
 import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import dev.frilly.messenger.api.net.HttpFetch;
+import dev.frilly.messenger.client.AppContext;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,8 +13,6 @@ import java.awt.*;
  * The starter screen for logging in when starting up Client Messenger.
  */
 public final class LoginScreen extends JPanel {
-
-  private final ApplicationFrame frame;
 
   private final JLabel title = Components.label("Messenger").h0().build();
   private final JLabel login = Components.label("Login").h3().build();
@@ -38,14 +36,10 @@ public final class LoginScreen extends JPanel {
 
   /**
    * Sets up a constructor for the starter screen.
-   *
-   * @param frame the app frame
    */
-  public LoginScreen(final ApplicationFrame frame) {
+  public LoginScreen() {
     setup();
     setupActions();
-    this.frame = frame;
-    frame.push(this);
   }
 
   private void setup() {
@@ -84,6 +78,7 @@ public final class LoginScreen extends JPanel {
             .body("username", usernameField.getText())
             .body("password", passwordField.getText())
             .post();
+
         if (res.getCode() == 404) {
           status.setText("That account does not exist.");
           return;
@@ -94,11 +89,21 @@ public final class LoginScreen extends JPanel {
           return;
         }
 
-        status.setText("Success!");
+        if (res.getCode() == 200) {
+          AppContext.setAuthToken(res.getBody().get("token").asText());
+          return;
+        }
+
+        status.setText("Unknown status code: %d".formatted(res.getCode()));
       } catch (Exception exception) {
         exception.printStackTrace();
         status.setText("The server host is not online.");
       }
+    });
+
+    registerButton.addActionListener(e -> {
+      final var frame = AppContext.getFrame();
+      frame.replace(new RegisterScreen());
     });
   }
 

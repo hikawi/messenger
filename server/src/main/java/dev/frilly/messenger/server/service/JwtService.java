@@ -1,5 +1,6 @@
 package dev.frilly.messenger.server.service;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +48,22 @@ public class JwtService {
         .parseSignedClaims(token)
         .getPayload()
         .get("id", Long.class);
+  }
+
+  /**
+   * Parses a JWT token, and checks if it's a valid token.
+   *
+   * @param token the token
+   *
+   * @return true if it is valid
+   */
+  public boolean validateToken(String token) {
+    try {
+      Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
+      return true;
+    } catch (JwtException | IllegalArgumentException e) {
+      return false;
+    }
   }
 
 }

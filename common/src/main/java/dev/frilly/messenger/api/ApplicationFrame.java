@@ -28,7 +28,6 @@ public final class ApplicationFrame {
    */
   public void push(final JPanel panel) {
     stack.add(panel);
-    frame.setContentPane(panel);
     render();
   }
 
@@ -36,6 +35,7 @@ public final class ApplicationFrame {
    * Force this frame to revalidate and repaint.
    */
   public void render() {
+    frame.setContentPane(stack.peek());
     frame.revalidate();
     frame.repaint();
     frame.pack();

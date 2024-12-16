@@ -8,6 +8,13 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface AccountRepository extends CrudRepository<Account, Long> {
 
+  /**
+   * Finds an account by their username.
+   *
+   * @param username the username
+   *
+   * @return the account if found
+   */
   Account findByUsername(final String username);
 
 }

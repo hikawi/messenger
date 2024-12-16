@@ -20,7 +20,11 @@ public class Entrypoint {
     SwingUtilities.invokeLater(() -> {
       FlatMacLightLaf.setup();
       final var frame = new ApplicationFrame("Messenger");
-      new LoginScreen(frame);
+      AppContext.setFrame(frame);
+
+      final var loginScreen = new LoginScreen();
+      frame.push(loginScreen);
+
       frame.display();
     });
   }

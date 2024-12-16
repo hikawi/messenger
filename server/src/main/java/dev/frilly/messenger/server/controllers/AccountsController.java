@@ -35,7 +35,6 @@ public final class AccountsController {
    */
   @PostMapping("/login")
   public LoginResponse login(@RequestBody PostLoginBody body) {
-    System.out.println("login");
     final var account = accountRepository.findByUsername(body.getUsername());
     if (account == null) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND);

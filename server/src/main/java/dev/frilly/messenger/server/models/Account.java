@@ -1,12 +1,11 @@
 package dev.frilly.messenger.server.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
+
+import java.util.Set;
 
 /**
  * The user account.
@@ -22,5 +21,15 @@ public class Account {
 
   private String username;
   private String password;
+
+  @ManyToMany(mappedBy = "members", cascade = CascadeType.ALL)
+  private Set<GroupChat> groupChats;
+
+  /**
+   * Adds a group chat to the set of group chats.
+   */
+  public void addGroupChat(final GroupChat group) {
+    groupChats.add(group);
+  }
 
 }
