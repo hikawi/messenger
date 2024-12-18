@@ -1,5 +1,8 @@
 package dev.frilly.messenger.api.component;
 
+import dev.frilly.messenger.api.Icon;
+import dev.frilly.messenger.api.IconsManager;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -24,6 +27,31 @@ public final class LabelBuilder extends ComponentBuilder<LabelBuilder> {
    */
   public LabelBuilder fg(final Color color) {
     label.setForeground(color);
+    return this;
+  }
+
+  /**
+   * Sets the icon of this label.
+   *
+   * @param icon the icon
+   * @param size the size
+   *
+   * @return this
+   */
+  public LabelBuilder icon(final Icon icon, final int size) {
+    this.label.setIcon(IconsManager.icon(icon));
+    return this.iconGap(size / 2);
+  }
+
+  /**
+   * Sets the label's icon gap.
+   *
+   * @param size the size
+   *
+   * @return this
+   */
+  public LabelBuilder iconGap(final int size) {
+    this.label.setIconTextGap(size);
     return this;
   }
 

@@ -9,6 +9,7 @@ import java.util.Set;
  * Represents a simple group chat.
  */
 @Data
+@Entity
 public final class GroupChat {
 
   @Id

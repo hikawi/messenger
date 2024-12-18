@@ -4,7 +4,7 @@ import dev.frilly.messenger.api.ApplicationFrame;
 import dev.frilly.messenger.api.Icon;
 import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
-import lombok.Cleanup;
+import dev.frilly.messenger.server.ServerContext;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,8 +15,6 @@ import java.sql.SQLException;
  * The welcome screen for the server side of Messenger.
  */
 public final class WelcomeScreen extends JPanel {
-
-  private final ApplicationFrame frame;
 
   private final JLabel welcomeLabel     = Components.label("Messenger (server)")
       .h0()
@@ -72,8 +70,6 @@ public final class WelcomeScreen extends JPanel {
   public WelcomeScreen(final ApplicationFrame frame) {
     setup();
     setupActions();
-    this.frame = frame;
-    frame.push(this);
   }
 
   private void setup() {
@@ -134,8 +130,8 @@ public final class WelcomeScreen extends JPanel {
       final var url = "jdbc:postgresql://%s:%s/%s".formatted(
           hostField.getText(), portField.getText(), nameField.getText());
       try {
-        final @Cleanup var conn = DriverManager.getConnection(url,
-            userField.getText(), passField.getText());
+        DriverManager.getConnection(url, userField.getText(),
+            passField.getText());
         statusField.setText("Yay");
 
         // Setup database property.
@@ -152,8 +148,16 @@ public final class WelcomeScreen extends JPanel {
       }
     });
 
-    startButton.addActionListener(e -> new AppScreen(frame));
-    quitButton.addActionListener(e -> frame.quit());
+    startButton.addActionListener(e -> {
+      final var frame     = ServerContext.getFrame();
+      final var appScreen = new AppScreen();
+      frame.push(appScreen);
+    });
+
+    quitButton.addActionListener(e -> {
+      final var frame = ServerContext.getFrame();
+      frame.quit();
+    });
   }
 
 }

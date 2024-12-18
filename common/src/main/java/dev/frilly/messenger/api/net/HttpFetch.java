@@ -36,22 +36,21 @@ public final class HttpFetch {
    *
    * @return the http fetch
    */
-  @SneakyThrows
   public static HttpFetch fetch(final String url) {
     return new HttpFetch(url);
   }
 
   /**
-   * Appends a query to the URI.
+   * Opens a new authorized fetch request, given a URL and a token.
    *
-   * @param key   the key
-   * @param value the value
+   * @param url   the url
+   * @param token the token
    *
-   * @return this
+   * @return the http fetch instance
    */
-  public HttpFetch query(final String key, final String value) {
-    query.put(key, URLEncoder.encode(value, StandardCharsets.UTF_8));
-    return this;
+  public static HttpFetch authFetch(final String url, final String token) {
+    return new HttpFetch(url).header("Authorization",
+        "Bearer %s".formatted(token));
   }
 
   /**
@@ -64,6 +63,19 @@ public final class HttpFetch {
    */
   public HttpFetch header(final String key, final String value) {
     headers.put(key, value);
+    return this;
+  }
+
+  /**
+   * Appends a query to the URI.
+   *
+   * @param key   the key
+   * @param value the value
+   *
+   * @return this
+   */
+  public HttpFetch query(final String key, final String value) {
+    query.put(key, URLEncoder.encode(value, StandardCharsets.UTF_8));
     return this;
   }
 

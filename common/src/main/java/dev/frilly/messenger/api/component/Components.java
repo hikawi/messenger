@@ -67,4 +67,13 @@ public final class Components {
     return new PasswordFieldBuilder(new JPasswordField());
   }
 
+  /**
+   * Constructs a new split pane panel.
+   *
+   * @return the split pane builder
+   */
+  public static SplitPaneBuilder split() {
+    return new SplitPaneBuilder(new JSplitPane());
+  }
+
 }

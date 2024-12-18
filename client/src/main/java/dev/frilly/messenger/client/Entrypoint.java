@@ -24,7 +24,6 @@ public class Entrypoint {
 
       final var loginScreen = new LoginScreen();
       frame.push(loginScreen);
-
       frame.display();
     });
   }

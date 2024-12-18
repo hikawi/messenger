@@ -23,15 +23,12 @@ public class Entrypoint {
    */
   public static void main(String[] args) {
     SwingUtilities.invokeLater(() -> {
-      try {
-        Class.forName("org.postgresql.Driver");
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-
       FlatMacLightLaf.setup();
-      final var serverFrame   = new ApplicationFrame("Messenger (Server)");
+      final var serverFrame = new ApplicationFrame("Messenger (Server)");
+      ServerContext.setFrame(serverFrame);
+
       final var welcomeScreen = new WelcomeScreen(serverFrame);
+      serverFrame.push(welcomeScreen);
       serverFrame.display();
     });
   }

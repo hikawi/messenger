@@ -1,6 +1,5 @@
 package dev.frilly.messenger.server.gui;
 
-import dev.frilly.messenger.api.ApplicationFrame;
 import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import dev.frilly.messenger.api.net.HttpFetch;
@@ -13,8 +12,6 @@ import javax.swing.*;
  * The main server application screen.
  */
 public final class AppScreen extends JPanel {
-
-  private final ApplicationFrame frame;
 
   private final JLabel helloThere = Components.label("Hello There")
       .h00()
@@ -36,14 +33,10 @@ public final class AppScreen extends JPanel {
 
   /**
    * Creates a new app screen instance.
-   *
-   * @param frame the main frame
    */
-  public AppScreen(final ApplicationFrame frame) {
-    this.frame = frame;
+  public AppScreen() {
     setup();
     setupActions();
-    frame.push(this);
   }
 
   private void setup() {
@@ -78,16 +71,23 @@ public final class AppScreen extends JPanel {
         throw new RuntimeException(e);
       }
 
-      final var app = new SpringApplicationBuilder(Entrypoint.class).headless(
-          false).build().run();
+      new SpringApplicationBuilder(Entrypoint.class).headless(false)
+          .build()
+          .run();
     }).start();
 
     testConnection.addActionListener(e -> {
       status.setText("Loading...");
       api.setText("Loading...");
-      final var res = HttpFetch.fetch("http://localhost:8080/handshake").get();
-      status.setText(String.valueOf(res.getCode()));
-      api.setText(res.getBody().get("version").asText());
+      try {
+        final var res = HttpFetch.fetch("http://localhost:8080/handshake")
+            .get();
+        status.setText(String.valueOf(res.getCode()));
+        api.setText(res.getBody().get("version").asText());
+      } catch (Exception exception) {
+        status.setText("Error!");
+        api.setText("Error!");
+      }
     });
   }
 

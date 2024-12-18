@@ -91,6 +91,9 @@ public final class LoginScreen extends JPanel {
 
         if (res.getCode() == 200) {
           AppContext.setAuthToken(res.getBody().get("token").asText());
+          final var app   = new AppScreen();
+          final var frame = AppContext.getFrame();
+          frame.push(app);
           return;
         }
 

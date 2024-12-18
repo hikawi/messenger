@@ -8,7 +8,7 @@ import dev.frilly.messenger.server.service.JwtService;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,9 +32,6 @@ public class GroupsController {
   private GroupRepository groupRepository;
 
   @Autowired
-  private SecurityContext context;
-
-  @Autowired
   private EntityManager em;
 
   /**
@@ -44,7 +41,9 @@ public class GroupsController {
    */
   @GetMapping("/groups")
   public List<GroupChat> getGroups() {
-    final var id      = (String) context.getAuthentication().getPrincipal();
+    final var id = (String) SecurityContextHolder.getContext()
+        .getAuthentication()
+        .getPrincipal();
     final var account = accountRepository.findById(Long.parseLong(id));
     if (account.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -58,7 +57,9 @@ public class GroupsController {
    */
   @PostMapping("/groups")
   public PostGroupResponse createGroup() {
-    final var id      = (String) context.getAuthentication().getPrincipal();
+    final var id      = (String) SecurityContextHolder.getContext()
+        .getAuthentication()
+        .getPrincipal();
     final var account = accountRepository.findById(Long.parseLong(id));
     if (account.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND);
