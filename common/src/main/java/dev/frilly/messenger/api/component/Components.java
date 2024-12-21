@@ -76,4 +76,15 @@ public final class Components {
     return new SplitPaneBuilder(new JSplitPane());
   }
 
+  /**
+   * Constructs a new text area component.
+   *
+   * @param text the area's text
+   *
+   * @return the text area builder
+   */
+  public static TextAreaBuilder textArea(final String text) {
+    return new TextAreaBuilder(new JTextArea(text));
+  }
+
 }
