@@ -2,6 +2,7 @@ package dev.frilly.messenger.api;
 
 import javax.swing.*;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.Stack;
 
 /**
@@ -19,6 +20,50 @@ public final class ApplicationFrame {
   public ApplicationFrame(final String title) {
     this.frame = new JFrame(title);
     this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+  }
+
+  /**
+   * Adds a hook to be run on this frame closing.
+   *
+   * @param runnable the runnable
+   */
+  public void addCloseHook(final Runnable runnable) {
+    frame.addWindowListener(new WindowListener() {
+      @Override
+      public void windowOpened(WindowEvent e) {
+
+      }
+
+      @Override
+      public void windowClosing(WindowEvent e) {
+        runnable.run();
+      }
+
+      @Override
+      public void windowClosed(WindowEvent e) {
+
+      }
+
+      @Override
+      public void windowIconified(WindowEvent e) {
+
+      }
+
+      @Override
+      public void windowDeiconified(WindowEvent e) {
+
+      }
+
+      @Override
+      public void windowActivated(WindowEvent e) {
+
+      }
+
+      @Override
+      public void windowDeactivated(WindowEvent e) {
+
+      }
+    });
   }
 
   /**

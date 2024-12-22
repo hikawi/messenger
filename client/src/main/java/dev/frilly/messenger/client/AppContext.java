@@ -1,6 +1,8 @@
 package dev.frilly.messenger.client;
 
 import dev.frilly.messenger.api.ApplicationFrame;
+import dev.frilly.messenger.api.net.RestHandler;
+import dev.frilly.messenger.api.net.SocketHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
@@ -13,10 +15,18 @@ public final class AppContext {
 
   @Getter
   @Setter
-  private String authToken;
+  private ApplicationFrame frame;
 
   @Getter
   @Setter
-  private ApplicationFrame frame;
+  private RestHandler restHandler;
+
+  @Getter
+  @Setter
+  private SocketHandler wsHandler;
+
+  @Getter
+  @Setter
+  private String sessionId;
 
 }

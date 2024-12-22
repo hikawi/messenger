@@ -3,11 +3,11 @@ package dev.frilly.messenger.client.gui;
 import dev.frilly.messenger.api.Icon;
 import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
-import dev.frilly.messenger.api.net.HttpFetch;
 import dev.frilly.messenger.client.AppContext;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.regex.Pattern;
 
 /**
  * The starter screen for logging in when starting up Client Messenger.
@@ -73,35 +73,36 @@ public final class LoginScreen extends JPanel {
 
   private void setupActions() {
     loginButton.addActionListener(e -> {
-      try {
-        final var res = HttpFetch.fetch("http://localhost:8080/login")
-            .body("username", usernameField.getText())
-            .body("password", passwordField.getText())
-            .post();
-
-        if (res.getCode() == 404) {
-          status.setText("That account does not exist.");
-          return;
-        }
-
-        if (res.getCode() == 401) {
-          status.setText("Wrong password.");
-          return;
-        }
-
-        if (res.getCode() == 200) {
-          AppContext.setAuthToken(res.getBody().get("token").asText());
-          final var app   = new AppScreen();
-          final var frame = AppContext.getFrame();
-          frame.push(app);
-          return;
-        }
-
-        status.setText("Unknown status code: %d".formatted(res.getCode()));
-      } catch (Exception exception) {
-        exception.printStackTrace();
-        status.setText("The server host is not online.");
+      final var regex = Pattern.compile("^[A-Za-z-_][A-Za-z-_0-9]+$");
+      if (!regex.asPredicate().test(usernameField.getText())) {
+        status.setText("Username is invalid.");
+        return;
       }
+      if (!regex.asPredicate().test(passwordField.getText())) {
+        status.setText("Password is invalid.");
+        return;
+      }
+
+      final var restHandler = AppContext.getRestHandler();
+      final var res = restHandler.query(
+          "login %s %s".formatted(usernameField.getText(),
+              passwordField.getText()));
+
+      final var code = res.split(" ")[0];
+      if (code.equals("404")) {
+        status.setText("That account doesn't exist");
+        return;
+      }
+
+      if (code.equals("401")) {
+        status.setText("Incorrect password.");
+        return;
+      }
+
+      AppContext.setSessionId(
+          "%s:%s".formatted(usernameField.getText(), passwordField.getText()));
+      final var frame = AppContext.getFrame();
+      frame.replace(new AppScreen());
     });
 
     registerButton.addActionListener(e -> {

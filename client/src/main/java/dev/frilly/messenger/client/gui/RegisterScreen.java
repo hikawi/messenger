@@ -3,11 +3,11 @@ package dev.frilly.messenger.client.gui;
 import dev.frilly.messenger.api.Icon;
 import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
-import dev.frilly.messenger.api.net.HttpFetch;
 import dev.frilly.messenger.client.AppContext;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.regex.Pattern;
 
 /**
  * The screen for registering a new account.
@@ -81,6 +81,7 @@ public final class RegisterScreen extends JPanel {
 
   private void setupActions() {
     registerButton.addActionListener(e -> {
+      final var regex    = Pattern.compile("^[A-Za-z-_][A-Za-z-_0-9]+$");
       final var username = usernameField.getText();
       final var password = passwordField.getText();
       final var confirm  = confirmField.getText();
@@ -90,28 +91,29 @@ public final class RegisterScreen extends JPanel {
         return;
       }
 
-      try {
-        final var res = HttpFetch.fetch("http://localhost:8080/register")
-            .body("username", username)
-            .body("password", password)
-            .post();
-
-        if (res.getCode() == 409) {
-          status.setText("Username already taken.");
-          return;
-        }
-
-        if (res.getCode() == 200) {
-          final var frame = AppContext.getFrame();
-          frame.replace(new LoginScreen());
-          return;
-        }
-
-        status.setText("Unknown response: %d".formatted(res.getCode()));
-      } catch (final Exception ex) {
-        ex.printStackTrace();
-        status.setText("Error occurred: " + ex.getMessage());
+      if (!regex.asPredicate().test(username)) {
+        status.setText("Username is invalid.");
+        return;
       }
+
+      if (!regex.asPredicate().test(password)) {
+        status.setText("Password is invalid.");
+        return;
+      }
+
+      final var socket = AppContext.getRestHandler();
+      final var res = socket.query(
+          "register %s %s".formatted(username, password));
+      final var code = res.split(" ")[0];
+
+      if (code.equals("409")) {
+        status.setText("That username is taken.");
+        return;
+      }
+
+      AppContext.setSessionId("%s:%s".formatted(username, password));
+      final var frame = AppContext.getFrame();
+      frame.push(new AppScreen());
     });
 
     loginButton.addActionListener(e -> {
