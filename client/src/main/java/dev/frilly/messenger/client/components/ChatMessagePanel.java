@@ -1,52 +1,45 @@
 package dev.frilly.messenger.client.components;
 
 import dev.frilly.messenger.api.component.Components;
+import dev.frilly.messenger.api.data.ChatMessage;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
+import dev.frilly.messenger.client.AppContext;
 
 import javax.swing.*;
 import java.awt.*;
 
 /**
- * The panel to display a simple chat message.
+ * The panel to display a single chat message.
  */
 public final class ChatMessagePanel extends JPanel {
 
-  private final String  username;
-  private final String  content;
-  private final boolean self;
-
-  private final JLabel    usernameLabel;
-  private final JTextArea contentArea;
+  private final JLabel    sender;
+  private final JTextArea content;
 
   /**
-   * Creates a new chat message panel.
+   * Creates a new chat message panel with the provided message.
    *
-   * @param username the username sending the message.
-   * @param content  the content
-   * @param self     is it mine?
+   * @param message the message
    */
-  public ChatMessagePanel(String username, String content, boolean self) {
-    this.content  = content;
-    this.self     = self;
-    this.username = self ? "You" : username;
-
-    this.usernameLabel = Components.label(username)
+  public ChatMessagePanel(final ChatMessage message) {
+    this.sender  = Components.label(message.getUsername())
         .h4()
-        .fg(self ? Color.BLUE : Color.BLACK)
+        .fg(message.getUsername().equals(AppContext.getUsername()) ? Color.BLUE
+                                                                   :
+            Color.BLACK)
         .build();
-    this.contentArea   = Components.textArea(content)
+    this.content = Components.textArea(message.getContent())
+        .transparent()
         .noEdit()
         .wrap()
-        .transparent()
         .build();
-
     setup();
   }
 
   private void setup() {
-    final var l = new LayoutBuilder(this);
-    l.hoz(l.leadingPara().comp(usernameLabel).comp(contentArea));
-    l.ver(l.seq().comp(usernameLabel).gap(4).comp(contentArea));
+    final var l = new LayoutBuilder(this).gaps();
+    l.hoz(l.leadingPara().comp(sender).comp(content));
+    l.ver(l.seq().comp(sender).gap(2).comp(content));
   }
 
 }

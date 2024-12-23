@@ -1,5 +1,7 @@
 package dev.frilly.messenger.api;
 
+import lombok.Getter;
+
 import javax.swing.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -11,6 +13,7 @@ import java.util.Stack;
  */
 public final class ApplicationFrame {
 
+  @Getter
   private final JFrame        frame;
   private final Stack<JPanel> stack = new Stack<>();
 

@@ -99,8 +99,8 @@ public final class LoginScreen extends JPanel {
         return;
       }
 
-      AppContext.setSessionId(
-          "%s:%s".formatted(usernameField.getText(), passwordField.getText()));
+      AppContext.setUsername(usernameField.getText());
+      AppContext.setPassword(passwordField.getText());
       final var frame = AppContext.getFrame();
       frame.replace(new AppScreen());
     });

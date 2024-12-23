@@ -3,25 +3,28 @@ package dev.frilly.messenger.server.gui;
 import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import dev.frilly.messenger.api.net.SocketHandler;
+import dev.frilly.messenger.server.ServerContext;
 import dev.frilly.messenger.server.net.RestParser;
 import lombok.SneakyThrows;
 
 import javax.swing.*;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Entrypoint screen of the server side app.
  */
 public final class AppScreen extends JPanel {
 
-  private final Set<Socket> webSockets = new HashSet<>();
+  private final JLabel  label = Components.label("Server").h0().build();
+  private final JButton quit  = Components.button("Quit").rounded().build();
 
+  /**
+   * Constructs a new Server App Screen.
+   */
   public AppScreen() {
     setupSocket();
     setup();
+    setupActions();
   }
 
   @SneakyThrows
@@ -46,8 +49,8 @@ public final class AppScreen extends JPanel {
         final var client  = wsSocket.accept();
         final var handler = new SocketHandler(client);
 
-        webSockets.add(client);
-        handler.setOnClose(() -> webSockets.remove(client));
+        ServerContext.getWsHandlers().add(handler);
+        handler.setOnClose(() -> ServerContext.getWsHandlers().remove(handler));
         handler.setConsumer(this::handleCommand);
         handler.start();
       } catch (final Exception exception) {
@@ -57,11 +60,16 @@ public final class AppScreen extends JPanel {
   }
 
   private void setup() {
-    final var l     = new LayoutBuilder(this).gaps().border(24);
-    final var label = Components.label("Server").h0().build();
+    final var l = new LayoutBuilder(this).gaps().border(24);
+    l.hoz(l.centerPara().comp(label).comp(quit));
+    l.ver(l.seq().comp(label).gap(16).comp(quit));
+  }
 
-    l.hoz(l.seq().comp(label));
-    l.ver(l.centerPara().comp(label));
+  private void setupActions() {
+    quit.addActionListener(e -> {
+      final var frame = ServerContext.getFrame();
+      frame.quit();
+    });
   }
 
   private void handleCommand(final String cmd) {

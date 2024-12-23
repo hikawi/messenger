@@ -1,25 +1,20 @@
 package dev.frilly.messenger.client.gui;
 
-import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
-import dev.frilly.messenger.client.components.GroupListSection;
+import dev.frilly.messenger.client.components.ChatViewPanel;
+import dev.frilly.messenger.client.components.SidebarPanel;
 
 import javax.swing.*;
-import java.awt.*;
 
 /**
  * The main screen of the client-side application.
  */
 public final class AppScreen extends JPanel {
 
-  private final GroupListSection groups = new GroupListSection(this);
-  private final JPanel           other  = new JPanel();
+  private final SidebarPanel  sidebar  = new SidebarPanel(this);
+  private final ChatViewPanel chatView = new ChatViewPanel(this);
 
-  private final JSplitPane pane = Components.split()
-      .hoz()
-      .left(groups)
-      .right(other)
-      .build();
+  private final JSplitPane splitPane = new JSplitPane();
 
   /**
    * Constructs a new app screen.
@@ -29,23 +24,17 @@ public final class AppScreen extends JPanel {
   }
 
   private void setup() {
-    final var l = new LayoutBuilder(this).gaps();
-    l.hoz(l.seq().comp(pane));
-    l.ver(l.centerPara().comp(pane));
+    splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+    splitPane.setDividerSize(0);
+    splitPane.setLeftComponent(sidebar);
+    splitPane.setRightComponent(chatView);
 
-    other.setLayout(new BorderLayout());
-    setLabel("Nothing");
+    final var l = new LayoutBuilder(this).gaps();
+    l.ver(l.seq().comp(splitPane));
+    l.hoz(l.seq().comp(splitPane));
   }
 
-  /**
-   * Testing by setting the label of the pane.
-   *
-   * @param value the value
-   */
-  public void setLabel(final String value) {
-    other.add(new JLabel(value), BorderLayout.CENTER);
-    other.revalidate();
-    other.repaint();
+  public void test(final String txt) {
   }
 
 }

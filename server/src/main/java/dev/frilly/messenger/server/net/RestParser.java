@@ -1,6 +1,9 @@
 package dev.frilly.messenger.server.net;
 
 import dev.frilly.messenger.api.net.SocketHandler;
+import dev.frilly.messenger.server.ServerContext;
+
+import java.util.Arrays;
 
 /**
  * A sub-class for parsing and reading REST-like requests.
@@ -25,6 +28,10 @@ public final class RestParser {
    */
   public void handle(final String cmd) {
     System.out.println("Caught cmd " + cmd);
+    if (cmd == null) {
+      return;
+    }
+
     final var args = cmd.split(" ");
     if (args.length == 0) {
       return;
@@ -36,6 +43,9 @@ public final class RestParser {
         break;
       case "register":
         handleRegister(args);
+        break;
+      case "sendmessage":
+        handleSendMessage(args);
         break;
     }
   }
@@ -77,6 +87,23 @@ public final class RestParser {
 
     AccountsController.register(user, pass);
     socket.write("201 created\n");
+  }
+
+  private void handleSendMessage(final String[] args) {
+    if (args.length < 4) {
+      return;
+    }
+
+    final var username = args[1];
+    final var group    = args[2];
+    final var content = String.join(" ",
+        Arrays.copyOfRange(args, 3, args.length));
+
+    socket.write("201 ok\n");
+    final var sockets = ServerContext.getWsHandlers();
+    sockets.forEach(s -> {
+      s.write("sendmessage %s %s %s".formatted(username, group, content));
+    });
   }
 
 }

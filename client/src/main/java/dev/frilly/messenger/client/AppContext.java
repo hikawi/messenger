@@ -23,10 +23,18 @@ public final class AppContext {
 
   @Getter
   @Setter
+  private String username;
+
+  @Getter
+  @Setter
+  private String password;
+
+  @Getter
+  @Setter
   private SocketHandler wsHandler;
 
   @Getter
   @Setter
-  private String sessionId;
+  private MessageRepository messageRepository;
 
 }

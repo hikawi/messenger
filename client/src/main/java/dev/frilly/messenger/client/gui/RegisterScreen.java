@@ -111,7 +111,8 @@ public final class RegisterScreen extends JPanel {
         return;
       }
 
-      AppContext.setSessionId("%s:%s".formatted(username, password));
+      AppContext.setUsername(username);
+      AppContext.setPassword(password);
       final var frame = AppContext.getFrame();
       frame.push(new AppScreen());
     });
