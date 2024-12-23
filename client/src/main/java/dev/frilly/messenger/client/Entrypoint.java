@@ -49,6 +49,9 @@ public final class Entrypoint {
       }
     });
 
+    restHandler.start();
+    wsHandler.start();
+
     SwingUtilities.invokeLater(() -> {
       FlatMacLightLaf.setup();
       final var frame = new ApplicationFrame("Messenger");

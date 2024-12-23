@@ -44,7 +44,24 @@ public final class SocketHandler extends Thread {
         new OutputStreamWriter(socket.getOutputStream()));
     writer.write(res + "\n");
     writer.flush();
-    writer.close();
+  }
+
+  @Override
+  @SneakyThrows
+  public void run() {
+    try (final var input = new BufferedReader(
+        new InputStreamReader(socket.getInputStream()))
+    ) {
+      while (socket.isConnected()) {
+        final var res = input.readLine();
+        if (consumer == null) {
+          continue;
+        }
+        consumer.accept(res);
+      }
+    }
+
+    close();
   }
 
   /**
@@ -54,22 +71,6 @@ public final class SocketHandler extends Thread {
   public void close() {
     socket.close();
     Optional.ofNullable(onClose).ifPresent(Runnable::run);
-  }
-
-  @Override
-  @SneakyThrows
-  public void run() {
-    try (final var input = new BufferedReader(
-        new InputStreamReader(socket.getInputStream()))
-    ) {
-      while (!socket.isClosed()) {
-        final var res = input.readLine();
-        if (consumer == null) {
-          continue;
-        }
-        consumer.accept(res);
-      }
-    }
   }
 
 }

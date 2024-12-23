@@ -52,7 +52,6 @@ public final class ChatViewPanel extends JPanel {
     textField.addKeyListener(new KeyListener() {
       @Override
       public void keyTyped(KeyEvent e) {
-        sendButton.setEnabled(!textField.getText().isBlank());
       }
 
       @Override
@@ -68,17 +67,18 @@ public final class ChatViewPanel extends JPanel {
     });
 
     sendButton.addActionListener(e -> {
-      final var opt = AppContext.getMessageRepository()
-          .sendMessage(textField.getText());
-      opt.ifPresent(
-          chatMessage -> messagesList.add(new ChatMessagePanel(chatMessage)));
+      AppContext.getMessageRepository().sendMessage(textField.getText());
+      textField.setText("");
+      textField.requestFocusInWindow();
     });
   }
 
   private void setupHook() {
-    //    AppContext.getMessageRepository().setOnAddConsumer(msg -> {
-    //      messagesList.add(new ChatMessagePanel(msg));
-    //    });
+    AppContext.getMessageRepository().setOnAddConsumer(msg -> {
+      messagesList.add(new ChatMessagePanel(msg));
+      scrollPane.revalidate();
+      scrollPane.repaint();
+    });
   }
 
   private void setupChatField() {

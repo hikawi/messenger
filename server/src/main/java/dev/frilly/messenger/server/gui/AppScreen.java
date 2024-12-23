@@ -46,13 +46,16 @@ public final class AppScreen extends JPanel {
     // Thread for the WS socket :8081
     new Thread(() -> {
       try (var wsSocket = new ServerSocket(8081)) {
-        final var client  = wsSocket.accept();
-        final var handler = new SocketHandler(client);
+        while (true) {
+          final var client  = wsSocket.accept();
+          final var handler = new SocketHandler(client);
 
-        ServerContext.getWsHandlers().add(handler);
-        handler.setOnClose(() -> ServerContext.getWsHandlers().remove(handler));
-        handler.setConsumer(this::handleCommand);
-        handler.start();
+          ServerContext.getWsHandlers().add(handler);
+          handler.setOnClose(
+              () -> ServerContext.getWsHandlers().remove(handler));
+          handler.setConsumer(this::handleCommand);
+          handler.start();
+        }
       } catch (final Exception exception) {
         exception.printStackTrace();
       }

@@ -17,7 +17,7 @@ public final class MessageRepository {
 
   @Setter
   @Getter
-  private String currentGroup;
+  private String currentGroup = "public";
 
   @Getter
   @Setter
@@ -30,28 +30,23 @@ public final class MessageRepository {
    *
    * @return the optional wrapper of a chat message.
    */
-  public Optional<ChatMessage> sendMessage(final String content) {
+  public void sendMessage(final String content) {
     final var msg = new ChatMessage();
     msg.setUsername(AppContext.getUsername());
     msg.setContent(content);
     msg.setGroupName(getCurrentGroup());
 
-    System.out.println(content);
     final var socket = AppContext.getRestHandler();
     final var res = socket.query(
         "sendmessage %s %s %s".formatted(msg.getUsername(), msg.getGroupName(),
             msg.getContent()));
 
     final var code = res.split(" ")[0];
-    if (code.equals("201")) {
-      addMessage(msg);
-      return Optional.of(msg);
-    } else {
+    if (!code.equals("201")) {
       final var frame = AppContext.getFrame();
       JOptionPane.showMessageDialog(frame.getFrame(),
           "There was an error sending the message", "Error",
           JOptionPane.ERROR_MESSAGE);
-      return Optional.empty();
     }
   }
 
