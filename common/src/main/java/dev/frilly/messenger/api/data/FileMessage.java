@@ -4,12 +4,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Data class for a chat message.
+ * A message with an embedded file.
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public final class ChatMessage extends Message {
+public final class FileMessage extends Message {
 
-  private String content;
+  private String fileName;
+  private String filePath;
 
 }

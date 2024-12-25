@@ -4,6 +4,8 @@ import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import dev.frilly.messenger.api.ApplicationFrame;
 import dev.frilly.messenger.server.gui.AppScreen;
 import dev.frilly.messenger.server.net.AccountsController;
+import dev.frilly.messenger.server.net.GroupsController;
+import dev.frilly.messenger.server.net.MessagesController;
 
 import javax.swing.*;
 
@@ -19,6 +21,8 @@ public class Entrypoint {
    */
   public static void main(String[] args) {
     AccountsController.load();
+    GroupsController.load();
+    MessagesController.load();
 
     SwingUtilities.invokeLater(() -> {
       FlatMacLightLaf.setup();
@@ -26,6 +30,8 @@ public class Entrypoint {
       serverFrame.addCloseHook(() -> {
         System.out.println("Saving");
         AccountsController.save();
+        GroupsController.save();
+        MessagesController.save();
       });
 
       ServerContext.setFrame(serverFrame);

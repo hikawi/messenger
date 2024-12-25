@@ -1,9 +1,11 @@
 package dev.frilly.messenger.server.net;
 
+import dev.frilly.messenger.api.data.GroupChat;
 import dev.frilly.messenger.api.net.SocketHandler;
 import dev.frilly.messenger.server.ServerContext;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * A sub-class for parsing and reading REST-like requests.
@@ -47,11 +49,17 @@ public final class RestParser {
       case "sendmessage":
         handleSendMessage(args);
         break;
+      case "check":
+        handleCheck(args);
+        break;
+      case "newgroup":
+        handleNewGroup(args);
+        break;
     }
   }
 
   private void handleLogin(final String[] args) {
-    if (args.length < 2) {
+    if (args.length < 3) {
       return;
     }
 
@@ -103,6 +111,26 @@ public final class RestParser {
     sockets.forEach(s -> {
       s.write("sendmessage %s %s %s".formatted(username, group, content));
     });
+  }
+
+  private void handleCheck(final String[] args) {
+    if (args.length < 2) {
+      return;
+    }
+
+    final var user = args[1];
+    final var acc  = AccountsController.isRegistered(user);
+    socket.write(acc ? "yes" : "no");
+  }
+
+  private void handleNewGroup(final String[] args) {
+    if (args.length < 2) {
+      return;
+    }
+
+    final var usernames = Arrays.copyOfRange(args, 1, args.length);
+    final var group     = new GroupChat();
+    group.setUuid(UUID.randomUUID());
   }
 
 }

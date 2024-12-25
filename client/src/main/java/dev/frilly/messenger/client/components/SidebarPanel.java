@@ -2,6 +2,7 @@ package dev.frilly.messenger.client.components;
 
 import dev.frilly.messenger.api.Icon;
 import dev.frilly.messenger.api.component.Components;
+import dev.frilly.messenger.api.data.GroupChat;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import dev.frilly.messenger.client.AppContext;
 import dev.frilly.messenger.client.gui.AppScreen;
@@ -51,12 +52,19 @@ public final class SidebarPanel extends JPanel {
 
   private void setupActions() {
     addButton.addActionListener(e -> {
-      app.test("Add Button");
+      final var dialog = new AddGroupDialog();
     });
 
     groupButtons.getFirst()
         .addActionListener(
             e -> AppContext.getMessageRepository().setCurrentGroup("public"));
+  }
+
+  /**
+   * Adds a new group to the group panel.
+   */
+  public void addNewGroup(final GroupChat chat) {
+
   }
 
 }

@@ -40,7 +40,7 @@ public final class ChatViewPanel extends JPanel {
 
   private void setup() {
     setupChatField();
-    messagesList.setLayout(new BoxLayout(messagesList, BoxLayout.Y_AXIS));
+    messagesList.setLayout(new GridLayout(0, 1));
     this.setMinimumSize(new Dimension(800, 800));
 
     final var l = new LayoutBuilder(this).gaps();
@@ -67,6 +67,10 @@ public final class ChatViewPanel extends JPanel {
     });
 
     sendButton.addActionListener(e -> {
+      if (textField.getText().isBlank()) {
+        return;
+      }
+
       AppContext.getMessageRepository().sendMessage(textField.getText());
       textField.setText("");
       textField.requestFocusInWindow();
@@ -78,6 +82,9 @@ public final class ChatViewPanel extends JPanel {
       messagesList.add(new ChatMessagePanel(msg));
       scrollPane.revalidate();
       scrollPane.repaint();
+
+      final var scroll = scrollPane.getVerticalScrollBar();
+      scroll.setValue(scroll.getMaximum());
     });
   }
 
