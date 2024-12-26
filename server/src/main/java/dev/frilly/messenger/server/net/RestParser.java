@@ -237,11 +237,12 @@ public final class RestParser {
   }
 
   private void handleHistory(final String[] args) {
-    if (args.length < 2) {
+    if (args.length < 3) {
       return;
     }
 
-    final var group = GroupsController.getGroup(UUID.fromString(args[1]));
+    final var group   = GroupsController.getGroup(UUID.fromString(args[1]));
+    final var forWhom = args[2];
     if (group.isEmpty()) {
       socket.write("404 not found");
       return;
@@ -254,11 +255,13 @@ public final class RestParser {
       new Thread(() -> {
         history.forEach(msg -> {
           if (msg instanceof ChatMessage chat) {
-            ws.write("sendmessage %s %s %d %s".formatted(msg.getUsername(),
-                msg.getGroupName(), msg.getTimestamp(), chat.getContent()));
+            ws.write("sendmessagehistory %s %s %s %d %s".formatted(forWhom,
+                msg.getUsername(), msg.getGroupName(), msg.getTimestamp(),
+                chat.getContent()));
           } else if (msg instanceof FileMessage file) {
-            ws.write("sendfile %s %s %d %s".formatted(file.getUsername(),
-                file.getGroupName(), file.getTimestamp(), file.getFilePath()));
+            ws.write("sendfilehistory %s %s %s %d %s".formatted(forWhom,
+                file.getUsername(), file.getGroupName(), file.getTimestamp(),
+                file.getFilePath()));
           }
         });
       }).start();

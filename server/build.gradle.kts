@@ -21,10 +21,6 @@ dependencies {
     implementation("com.formdev:flatlaf-intellij-themes:3.5.2")
 }
 
-tasks.shadowJar {
-    minimize()
-}
-
 application {
     mainClass.set("dev.frilly.messenger.server.Entrypoint")
 }
@@ -37,10 +33,6 @@ java {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
 }
-//
-//springBoot {
-//    mainClass.set("dev.frilly.messenger.server.Entrypoint")
-//}
 
 tasks.jar {
     layout.buildDirectory.set(file("../build/server"))

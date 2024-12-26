@@ -138,7 +138,7 @@ public final class SidebarPanel extends JPanel {
       AppContext.getGroupRepository().addGroupChat(groupChat);
 
       // Retrieve group chat's message history.
-      rest.query("history " + groupId);
+      rest.query("history %s %s".formatted(groupId, AppContext.getUsername()));
     }
   }
 

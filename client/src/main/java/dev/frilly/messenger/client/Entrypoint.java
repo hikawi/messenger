@@ -60,6 +60,12 @@ public final class Entrypoint {
         case "newgroup":
           handleNewGroup(cmdArgs);
           break;
+        case "sendmessagehistory":
+          handleSendMessageHistory(cmdArgs);
+          break;
+        case "sendfilehistory":
+          handleSendFileHistory(cmdArgs);
+          break;
       }
     });
 
@@ -164,6 +170,67 @@ public final class Entrypoint {
     groupChat.setMembers(
         Arrays.stream(resArgs).skip(1).collect(Collectors.toSet()));
     AppContext.getGroupRepository().addGroupChat(groupChat);
+  }
+
+  private static void handleSendMessageHistory(final String[] args) {
+    if (args.length < 6) {
+      return;
+    }
+
+    final var forUser = args[1];
+    if (!forUser.equals(AppContext.getUsername())) {
+      return;
+    }
+
+    final var username  = args[2];
+    final var group     = args[3];
+    final var timestamp = args[4];
+    final var content = String.join(" ",
+        Arrays.copyOfRange(args, 5, args.length));
+
+    final var message = new ChatMessage();
+    message.setUsername(username);
+    message.setGroupName(group);
+    message.setTimestamp(Long.parseLong(timestamp));
+    message.setContent(content);
+
+    // Only accept messages that are in my groups or public.
+    if (group.equals("public") || AppContext.getGroupRepository()
+        .hasGroup(group)) {
+      AppContext.getMessageRepository().addMessage(message);
+    }
+  }
+
+  private static void handleSendFileHistory(final String[] args) {
+    if (args.length < 6) {
+      return;
+    }
+
+    final var forUser = args[1];
+    if (!forUser.equals(AppContext.getUsername())) {
+      return;
+    }
+
+    final var user      = args[2];
+    final var group     = args[3];
+    final var timestamp = Long.parseLong(args[4]);
+    final var path      = args[5];
+
+    final var msg = new FileMessage();
+    msg.setUsername(user);
+    msg.setGroupName(group);
+    msg.setTimestamp(timestamp);
+    msg.setFilePath(path);
+
+    final var rest = AppContext.getRestHandler();
+    final var res  = rest.query("getfilename %s".formatted(path));
+    msg.setFileName(res);
+
+    // Only accept messages that are in my groups or public.
+    if (group.equals("public") || AppContext.getGroupRepository()
+        .hasGroup(group)) {
+      AppContext.getMessageRepository().addMessage(msg);
+    }
   }
 
 }
