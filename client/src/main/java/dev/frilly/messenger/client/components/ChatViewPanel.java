@@ -6,6 +6,7 @@ import dev.frilly.messenger.api.data.ChatMessage;
 import dev.frilly.messenger.api.data.FileMessage;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import dev.frilly.messenger.client.AppContext;
+import lombok.Cleanup;
 
 import javax.swing.*;
 import java.awt.*;
@@ -179,24 +180,26 @@ public final class ChatViewPanel extends JPanel {
 
   private static void writeDataOutput(Socket fileSocket, File selection) throws
                                                                          IOException {
-    final var output = new DataOutputStream(fileSocket.getOutputStream());
+    final @Cleanup var output = new DataOutputStream(
+        fileSocket.getOutputStream());
 
     output.writeUTF(AppContext.getUsername());
     output.writeUTF(AppContext.getMessageRepository().getCurrentGroup());
     output.writeUTF(selection.getName());
 
-    final var buffer    = new byte[8000];
-    var       read      = 0;
-    final var fileInput = new FileInputStream(selection);
+    final var          buffer    = new byte[8000];
+    var                read      = 0;
+    final @Cleanup var fileInput = new FileInputStream(selection);
 
     while (fileInput.available() > 0) {
       read = fileInput.read(buffer);
-      output.write(read);
+      System.out.println("Client -> Server: Bits block " + read);
+      output.write(buffer, 0, read);
     }
-
-    fileInput.close();
     output.flush();
     output.close();
+
+    System.out.println("Trying to send file length " + selection.length());
   }
 
   private void pullChatMessages(final String groupId) {

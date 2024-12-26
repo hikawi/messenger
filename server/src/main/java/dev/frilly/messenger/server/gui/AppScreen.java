@@ -4,6 +4,7 @@ import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import dev.frilly.messenger.api.net.SocketHandler;
 import dev.frilly.messenger.server.ServerContext;
+import dev.frilly.messenger.server.net.FileSendSocketHandler;
 import dev.frilly.messenger.server.net.FileSocketHandler;
 import dev.frilly.messenger.server.net.RestParser;
 import lombok.SneakyThrows;
@@ -62,12 +63,25 @@ public final class AppScreen extends JPanel {
       }
     }).start();
 
-    // Thread for file sending socket
+    // Thread for file receiving socket
     new Thread(() -> {
       try (var fileSocket = new ServerSocket(8082)) {
         while (true) {
           final var client  = fileSocket.accept();
           final var handler = new FileSocketHandler(client);
+          handler.start();
+        }
+      } catch (final Exception exception) {
+        exception.printStackTrace();
+      }
+    }).start();
+
+    // Thread for file sending away socket
+    new Thread(() -> {
+      try (var sendSocket = new ServerSocket(8083)) {
+        while (true) {
+          final var client  = sendSocket.accept();
+          final var handler = new FileSendSocketHandler(client);
           handler.start();
         }
       } catch (final Exception exception) {

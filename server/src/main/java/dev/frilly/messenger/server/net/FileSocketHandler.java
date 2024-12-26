@@ -2,7 +2,6 @@ package dev.frilly.messenger.server.net;
 
 import dev.frilly.messenger.api.data.FileMessage;
 import dev.frilly.messenger.server.ServerContext;
-import lombok.Cleanup;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -46,11 +45,16 @@ public final class FileSocketHandler extends Thread {
         }
 
         // Transfer the file.
-        final @Cleanup var fileOutput = new FileOutputStream(file);
-        final var          buffer     = new byte[8000];
-        while (input.read(buffer) > 0) {
-          fileOutput.write(buffer);
+        final var fileOutput = new FileOutputStream(file);
+        final var buffer     = new byte[8000];
+        var       length     = 0;
+        while ((length = input.read(buffer)) > 0) {
+          fileOutput.write(buffer, 0, length);
         }
+        fileOutput.flush();
+        fileOutput.close();
+
+        System.out.println("Received file length " + file.length());
 
         // Save a message instance.
         final var fileMsg = new FileMessage();

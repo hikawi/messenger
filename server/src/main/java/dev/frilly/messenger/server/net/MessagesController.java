@@ -129,7 +129,7 @@ public final class MessagesController {
     dataFolder.mkdirs();
 
     for (final var entry : messages.entrySet()) {
-      if (entry.getValue().isEmpty()) {
+      if (entry.getValue().isEmpty() || entry.getKey().equals("public")) {
         continue;
       }
 

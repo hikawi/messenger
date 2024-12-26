@@ -5,10 +5,14 @@ import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.data.FileMessage;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import dev.frilly.messenger.client.AppContext;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
+import java.io.*;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -92,6 +96,60 @@ public final class FileMessagePanel extends JPanel {
   }
 
   private void setupActions() {
+    deleteButton.addActionListener(e -> {
+      final var rest = AppContext.getRestHandler();
+      final var res = rest.query(
+          "deletemessage %s %s %d".formatted(msg.getUsername(),
+              msg.getGroupName(), msg.getTimestamp()));
+
+      if (!res.startsWith("200")) {
+        final var frame = AppContext.getFrame().getFrame();
+        JOptionPane.showMessageDialog(frame,
+            "There was an error deleting this message?", "Error?",
+            JOptionPane.ERROR_MESSAGE);
+      }
+    });
+
+    fileIcon.addActionListener(e -> {
+      fileIcon.setEnabled(false);
+      new Thread(this::downloadFile).start();
+    });
+  }
+
+  @SneakyThrows
+  private void downloadFile() {
+    final var socket = new Socket("localhost", 8083);
+
+    final @Cleanup var output = new DataOutputStream(socket.getOutputStream());
+    output.writeUTF(msg.getFilePath());
+
+    final var          buffer = new byte[8000];
+    final @Cleanup var input  = new DataInputStream(socket.getInputStream());
+
+    final var folder = new File(System.getProperty("user.home"), "Downloads");
+    final var file   = new File(folder, msg.getFileName());
+    if (!file.exists()) {
+      folder.mkdirs();
+      file.createNewFile();
+    }
+
+    final var fileOutput = new BufferedOutputStream(new FileOutputStream(file));
+    var       length     = 0;
+    while ((length = input.read(buffer)) > 0) {
+      fileOutput.write(buffer, 0, length);
+    }
+    fileOutput.flush();
+    fileOutput.close();
+
+    System.out.println("Downloaded file length " + file.length());
+
+    SwingUtilities.invokeLater(() -> {
+      final var frame = AppContext.getFrame().getFrame();
+      fileIcon.setEnabled(true);
+      JOptionPane.showMessageDialog(frame,
+          "Downloaded file \"%s\"".formatted(msg.getFileName()), "Success!",
+          JOptionPane.INFORMATION_MESSAGE);
+    });
   }
 
 }
