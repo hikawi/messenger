@@ -34,7 +34,4 @@ public final class AppScreen extends JPanel {
     l.hoz(l.seq().comp(splitPane));
   }
 
-  public void test(final String txt) {
-  }
-
 }

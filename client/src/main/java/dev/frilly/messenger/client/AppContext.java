@@ -37,4 +37,8 @@ public final class AppContext {
   @Setter
   private MessageRepository messageRepository;
 
+  @Getter
+  @Setter
+  private GroupRepository groupRepository;
+
 }

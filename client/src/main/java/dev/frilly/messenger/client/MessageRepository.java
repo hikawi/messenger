@@ -15,13 +15,25 @@ public final class MessageRepository {
 
   private final Map<String, List<ChatMessage>> messages = new HashMap<>();
 
-  @Setter
   @Getter
   private String currentGroup = "public";
+
+  @Setter
+  private Consumer<String> onGroupSwap;
 
   @Getter
   @Setter
   private Consumer<ChatMessage> onAddConsumer;
+
+  /**
+   * Sets the new current group.
+   *
+   * @param group the group
+   */
+  public void setCurrentGroup(final String group) {
+    currentGroup = group;
+    Optional.ofNullable(onGroupSwap).ifPresent(hook -> hook.accept(group));
+  }
 
   /**
    * Sends a message via the REST socket and returns the instance if successful.
@@ -72,7 +84,10 @@ public final class MessageRepository {
    * @return the list of messages
    */
   public List<ChatMessage> getMessages(final String group) {
-    return Collections.unmodifiableList(messages.get(group));
+    if (!messages.containsKey(group)) {
+      return List.of();
+    }
+    return messages.get(group).stream().sorted().toList();
   }
 
 }

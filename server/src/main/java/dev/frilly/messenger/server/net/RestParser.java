@@ -1,10 +1,10 @@
 package dev.frilly.messenger.server.net;
 
-import dev.frilly.messenger.api.data.GroupChat;
 import dev.frilly.messenger.api.net.SocketHandler;
 import dev.frilly.messenger.server.ServerContext;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.UUID;
 
 /**
@@ -54,6 +54,14 @@ public final class RestParser {
         break;
       case "newgroup":
         handleNewGroup(args);
+        break;
+      case "getgroup":
+        handleGetGroup(args);
+        break;
+      case "getgroups":
+        handleGetGroups(args);
+        break;
+      default:
         break;
     }
   }
@@ -129,8 +137,47 @@ public final class RestParser {
     }
 
     final var usernames = Arrays.copyOfRange(args, 1, args.length);
-    final var group     = new GroupChat();
-    group.setUuid(UUID.randomUUID());
+    final var group     = GroupsController.createGroup();
+    group.setMembers(new HashSet<>(Arrays.asList(usernames)));
+    socket.write("201 " + group.getUuid().toString());
+
+    final var s = "newgroup %s".formatted(group.getUuid().toString());
+    for (final var ws : ServerContext.getWsHandlers()) {
+      ws.write(s);
+    }
+  }
+
+  private void handleGetGroup(final String[] args) {
+    if (args.length < 2) {
+      return;
+    }
+
+    final var groupId = args[1];
+    final var group   = GroupsController.getGroup(UUID.fromString(groupId));
+    if (group.isEmpty()) {
+      socket.write("404");
+      return;
+    }
+
+    final var sb = new StringBuilder("200");
+    for (final var member : group.get().getMembers()) {
+      sb.append(" ").append(member);
+    }
+    socket.write(sb.toString());
+  }
+
+  private void handleGetGroups(final String[] args) {
+    if (args.length < 2) {
+      return;
+    }
+
+    final var user = args[1];
+    final var sb   = new StringBuilder("200");
+    for (final var group : GroupsController.getGroupChatsOf(user)) {
+      sb.append(" ").append(group.getUuid().toString());
+    }
+    System.out.printf("Received getGroup commands for %s: %s\n", args[0], sb);
+    socket.write(sb.toString());
   }
 
 }

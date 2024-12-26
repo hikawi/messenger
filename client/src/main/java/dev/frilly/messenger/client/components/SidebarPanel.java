@@ -9,8 +9,10 @@ import dev.frilly.messenger.client.gui.AppScreen;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * The panel to show buttons to handle groups and show group chats.
@@ -35,6 +37,8 @@ public final class SidebarPanel extends JPanel {
     this.app = app;
     setup();
     setupActions();
+    setupHooks();
+    new Thread(this::loadData).start();
   }
 
   private void setup() {
@@ -52,19 +56,100 @@ public final class SidebarPanel extends JPanel {
 
   private void setupActions() {
     addButton.addActionListener(e -> {
-      final var dialog = new AddGroupDialog();
+      final var frame = AppContext.getFrame();
+      final String newMembers = JOptionPane.showInputDialog(frame.getFrame(),
+          "Type usernames of members to add to group");
+      final var usernames = newMembers.split(" ");
+
+      final var regex  = Pattern.compile("[A-Za-z-_][A-Za-z-_0-9]+");
+      final var socket = AppContext.getRestHandler();
+
+      for (final var username : usernames) {
+        if (!regex.asPredicate().test(username)) {
+          JOptionPane.showMessageDialog(frame.getFrame(),
+              "Username \"%s\" is invalid".formatted(username), "Error!",
+              JOptionPane.ERROR_MESSAGE);
+          return;
+        }
+
+        final var res = socket.query("check %s".formatted(username));
+        if (res.equals("no")) {
+          JOptionPane.showMessageDialog(frame.getFrame(),
+              "Username \"%s\" doesn't exist".formatted(username), "Error!",
+              JOptionPane.ERROR_MESSAGE);
+          return;
+        }
+      }
+
+      final var members = new HashSet<String>();
+      Collections.addAll(members, usernames);
+      members.add(AppContext.getUsername());
+
+      final var res = socket.query(
+          "newgroup %s".formatted(String.join(" ", members)));
+      if (!res.startsWith("201")) {
+        JOptionPane.showMessageDialog(frame.getFrame(),
+            "An error occurred while creating the group", "Error!",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      }
+
+      JOptionPane.showMessageDialog(frame.getFrame(),
+          "Created group with %d members.".formatted(members.size()),
+          "Success!", JOptionPane.INFORMATION_MESSAGE);
     });
 
-    groupButtons.getFirst()
-        .addActionListener(
-            e -> AppContext.getMessageRepository().setCurrentGroup("public"));
+    groupButtons.getFirst().addActionListener(e -> {
+      AppContext.getMessageRepository().setCurrentGroup("public");
+      resetButtonStates();
+      groupButtons.getFirst().setEnabled(false);
+    });
+  }
+
+  private void setupHooks() {
+    final var repo = AppContext.getGroupRepository();
+    repo.setAddHook(this::addNewGroup);
+  }
+
+  private void loadData() {
+    final var rest   = AppContext.getRestHandler();
+    final var groups = rest.query("getgroups " + AppContext.getUsername());
+    final var split  = groups.split(" ");
+
+    for (int i = 1; i < split.length; i++) {
+      final var groupId   = split[i];
+      final var groupData = rest.query("getgroup " + groupId);
+
+      final var groupChat = new GroupChat();
+      groupChat.setUuid(UUID.fromString(groupId));
+      groupChat.setMembers(Arrays.stream(groupData.split(" "))
+          .skip(1)
+          .collect(Collectors.toSet()));
+      AppContext.getGroupRepository().addGroupChat(groupChat);
+    }
+  }
+
+  private void resetButtonStates() {
+    groupButtons.forEach(btn -> btn.setEnabled(true));
   }
 
   /**
    * Adds a new group to the group panel.
    */
   public void addNewGroup(final GroupChat chat) {
+    final var btn = Components.button(String.join(", ", chat.getMembers()))
+        .build();
+    btn.addActionListener(e -> {
+      AppContext.getMessageRepository()
+          .setCurrentGroup(chat.getUuid().toString());
+      resetButtonStates();
+      btn.setEnabled(false);
+    });
 
+    groupButtons.add(btn);
+    groupsPanel.add(btn);
+    groupsPanel.revalidate();
+    groupsPanel.repaint();
   }
 
 }
