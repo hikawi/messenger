@@ -56,8 +56,8 @@ public final class RestParser {
       case "deletemessage":
         handleDeleteMessage(args);
         break;
-      case "sendfile":
-        handleSendFile(args);
+      case "getfilename":
+        handleGetFileName(args);
         break;
       case "check":
         handleCheck(args);
@@ -168,15 +168,14 @@ public final class RestParser {
     });
   }
 
-  private void handleSendFile(final String[] args) {
+  private void handleGetFileName(final String[] args) {
     if (args.length < 2) {
       return;
     }
 
-    final var name = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-
-    final var fileMsg = new FileMessage();
-    fileMsg.setFileName(name);
+    final var path = args[1];
+    final var name = MessagesController.lookupFileName(path);
+    socket.write(String.valueOf(name));
   }
 
   private void handleCheck(final String[] args) {
@@ -257,6 +256,9 @@ public final class RestParser {
           if (msg instanceof ChatMessage chat) {
             ws.write("sendmessage %s %s %d %s".formatted(msg.getUsername(),
                 msg.getGroupName(), msg.getTimestamp(), chat.getContent()));
+          } else if (msg instanceof FileMessage file) {
+            ws.write("sendfile %s %s %d %s".formatted(file.getUsername(),
+                file.getGroupName(), file.getTimestamp(), file.getFilePath()));
           }
         });
       }).start();

@@ -47,7 +47,7 @@ public final class ChatMessagePanel extends JPanel {
     this.timestamp = Components.label(dateFormat.format(date)).build();
 
     this.deleteButton = Components.button("")
-        .icon(Icon.DELETE, 8)
+        .icon(Icon.DELETE, 4)
         .toolbar()
         .build();
 
@@ -60,10 +60,10 @@ public final class ChatMessagePanel extends JPanel {
 
     l.hoz(l.leadingPara()
         .group(
-            l.seq().comp(sender).fullGap().comp(timestamp).comp(deleteButton))
+            l.seq().comp(sender).fullGap().comp(deleteButton).comp(timestamp))
         .comp(content));
     l.ver(l.seq()
-        .group(l.basePara().comp(sender).comp(timestamp).comp(deleteButton))
+        .group(l.centerPara().comp(sender).comp(deleteButton).comp(timestamp))
         .gap(2)
         .comp(content));
 

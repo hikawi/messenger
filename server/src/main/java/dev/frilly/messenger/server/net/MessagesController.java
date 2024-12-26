@@ -16,7 +16,8 @@ import java.util.*;
 @UtilityClass
 public final class MessagesController {
 
-  private final Map<String, List<Message>> messages = new HashMap<>();
+  private final Map<String, List<Message>> messages  = new HashMap<>();
+  private final Map<String, String>        fileNames = new HashMap<>();
 
   /**
    * Loads all messages already sent by all clients in all groups.
@@ -51,6 +52,7 @@ public final class MessagesController {
         } else if (typeBit == 1) {
           final var fileMsg = new FileMessage();
           fileMsg.setUsername(input.readUTF());
+          fileMsg.setGroupName(groupName);
           fileMsg.setFileName(input.readUTF());
           fileMsg.setFilePath(input.readUTF());
           fileMsg.setTimestamp(input.readLong());
@@ -70,6 +72,21 @@ public final class MessagesController {
   public void saveMessage(final Message message) {
     messages.putIfAbsent(message.getGroupName(), new ArrayList<>());
     messages.get(message.getGroupName()).add(message);
+
+    if (message instanceof FileMessage fileMsg) {
+      fileNames.put(fileMsg.getFilePath(), fileMsg.getFileName());
+    }
+  }
+
+  /**
+   * Retrieves the file name from the file path.
+   *
+   * @param filePath the file path
+   *
+   * @return the file name
+   */
+  public String lookupFileName(final String filePath) {
+    return fileNames.get(filePath);
   }
 
   /**
@@ -96,6 +113,11 @@ public final class MessagesController {
     }
 
     msgs.removeIf(node -> node.baseEquals(message));
+    if (message instanceof FileMessage fileMsg) {
+      final var file = new File(".data/files", fileMsg.getFilePath());
+      file.delete();
+      fileNames.remove(fileMsg.getFilePath());
+    }
   }
 
   /**
@@ -120,11 +142,13 @@ public final class MessagesController {
 
       for (final var message : entry.getValue()) {
         if (message instanceof ChatMessage chatMsg) {
+          System.out.println(chatMsg);
           output.writeByte(0);
           output.writeUTF(chatMsg.getUsername());
           output.writeUTF(chatMsg.getContent());
           output.writeLong(chatMsg.getTimestamp());
         } else if (message instanceof FileMessage fileMsg) {
+          System.out.println(fileMsg);
           output.writeByte(1);
           output.writeUTF(fileMsg.getUsername());
           output.writeUTF(fileMsg.getFileName());

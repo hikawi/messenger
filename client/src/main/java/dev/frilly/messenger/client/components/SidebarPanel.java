@@ -48,7 +48,7 @@ public final class SidebarPanel extends JPanel {
     gbc.gridx     = 0;
     gbc.gridwidth = GridBagConstraints.REMAINDER;
     gbc.fill      = GridBagConstraints.HORIZONTAL;
-    gbc.anchor    = GridBagConstraints.PAGE_START;
+    gbc.anchor    = GridBagConstraints.NORTH;
 
     scrollPane.setMinimumSize(new Dimension(100, 800));
     groupsPanel.setLayout(new GridBagLayout());

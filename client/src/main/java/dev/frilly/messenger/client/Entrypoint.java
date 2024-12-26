@@ -3,6 +3,7 @@ package dev.frilly.messenger.client;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import dev.frilly.messenger.api.ApplicationFrame;
 import dev.frilly.messenger.api.data.ChatMessage;
+import dev.frilly.messenger.api.data.FileMessage;
 import dev.frilly.messenger.api.data.GroupChat;
 import dev.frilly.messenger.api.net.RestHandler;
 import dev.frilly.messenger.api.net.SocketHandler;
@@ -49,6 +50,9 @@ public final class Entrypoint {
       switch (cmdArgs[0].toLowerCase()) {
         case "sendmessage":
           handleSendMessage(cmdArgs);
+          break;
+        case "sendfile":
+          handleSendFile(cmdArgs);
           break;
         case "deletemessage":
           handleDeleteMessage(cmdArgs);
@@ -98,6 +102,33 @@ public final class Entrypoint {
     if (group.equals("public") || AppContext.getGroupRepository()
         .hasGroup(group)) {
       AppContext.getMessageRepository().addMessage(message);
+    }
+  }
+
+  private static void handleSendFile(final String[] args) {
+    if (args.length < 5) {
+      return;
+    }
+
+    final var user      = args[1];
+    final var group     = args[2];
+    final var timestamp = Long.parseLong(args[3]);
+    final var path      = args[4];
+
+    final var msg = new FileMessage();
+    msg.setUsername(user);
+    msg.setGroupName(group);
+    msg.setTimestamp(timestamp);
+    msg.setFilePath(path);
+
+    final var rest = AppContext.getRestHandler();
+    final var res  = rest.query("getfilename %s".formatted(path));
+    msg.setFileName(res);
+
+    // Only accept messages that are in my groups or public.
+    if (group.equals("public") || AppContext.getGroupRepository()
+        .hasGroup(group)) {
+      AppContext.getMessageRepository().addMessage(msg);
     }
   }
 

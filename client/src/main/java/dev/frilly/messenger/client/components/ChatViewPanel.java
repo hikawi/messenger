@@ -3,6 +3,7 @@ package dev.frilly.messenger.client.components;
 import dev.frilly.messenger.api.Icon;
 import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.data.ChatMessage;
+import dev.frilly.messenger.api.data.FileMessage;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import dev.frilly.messenger.client.AppContext;
 
@@ -10,6 +11,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.Socket;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -86,13 +92,51 @@ public final class ChatViewPanel extends JPanel {
       textField.setText("");
       textField.requestFocusInWindow();
     });
+
+    fileButton.addActionListener(e -> {
+      final var file      = new JFileChooser(".");
+      final var twentyMb  = 20 * 1024 * 1024;
+      final var frame     = AppContext.getFrame().getFrame();
+      final var returnVal = file.showOpenDialog(frame);
+
+      if (returnVal != JFileChooser.APPROVE_OPTION) {
+        return;
+      }
+
+      final var selection = file.getSelectedFile();
+      if (selection == null) {
+        return;
+      }
+
+      if (!selection.isFile()) {
+        JOptionPane.showMessageDialog(frame, "That isn't a file", "Error!",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      }
+
+      if (selection.length() >= twentyMb) {
+        JOptionPane.showMessageDialog(frame, "Max is 20MB.", "Error!",
+            JOptionPane.ERROR_MESSAGE);
+      }
+
+      try (final var fileSocket = new Socket("localhost", 8082)) {
+        writeDataOutput(fileSocket, selection);
+      } catch (final Exception exception) {
+        exception.printStackTrace();
+        JOptionPane.showMessageDialog(frame, "Error uploading file!", "Error!",
+            JOptionPane.ERROR_MESSAGE);
+      }
+    });
   }
 
   private void setupHook() {
     AppContext.getMessageRepository().setOnAddConsumer(msg -> {
       if (msg instanceof ChatMessage chat) {
         messagesList.add(new ChatMessagePanel(chat));
+      } else if (msg instanceof FileMessage file) {
+        messagesList.add(new FileMessagePanel(file));
       }
+
       scrollPane.revalidate();
       scrollPane.repaint();
 
@@ -133,6 +177,28 @@ public final class ChatViewPanel extends JPanel {
     l.linkY(textField, sendButton, fileButton);
   }
 
+  private static void writeDataOutput(Socket fileSocket, File selection) throws
+                                                                         IOException {
+    final var output = new DataOutputStream(fileSocket.getOutputStream());
+
+    output.writeUTF(AppContext.getUsername());
+    output.writeUTF(AppContext.getMessageRepository().getCurrentGroup());
+    output.writeUTF(selection.getName());
+
+    final var buffer    = new byte[8000];
+    var       read      = 0;
+    final var fileInput = new FileInputStream(selection);
+
+    while (fileInput.available() > 0) {
+      read = fileInput.read(buffer);
+      output.write(read);
+    }
+
+    fileInput.close();
+    output.flush();
+    output.close();
+  }
+
   private void pullChatMessages(final String groupId) {
     messagesList.removeAll();
     final var repo     = AppContext.getMessageRepository();
@@ -141,10 +207,15 @@ public final class ChatViewPanel extends JPanel {
     for (final var msg : messages) {
       if (msg instanceof ChatMessage chat) {
         messagesList.add(new ChatMessagePanel(chat));
+      } else if (msg instanceof FileMessage file) {
+        messagesList.add(new FileMessagePanel(file));
       }
     }
+
     scrollPane.revalidate();
     scrollPane.repaint();
+    final var scroll = scrollPane.getVerticalScrollBar();
+    scroll.setValue(scroll.getMaximum());
   }
 
 }
