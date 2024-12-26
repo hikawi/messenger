@@ -5,7 +5,6 @@ import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.data.GroupChat;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import dev.frilly.messenger.client.AppContext;
-import dev.frilly.messenger.client.gui.AppScreen;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,8 +18,6 @@ import java.util.stream.Collectors;
  */
 public final class SidebarPanel extends JPanel {
 
-  private final AppScreen app;
-
   private final JButton addButton = Components.button("")
       .icon(Icon.PLUS, 16)
       .tab()
@@ -30,11 +27,12 @@ public final class SidebarPanel extends JPanel {
   private final JScrollPane   scrollPane   = new JScrollPane(groupsPanel);
   private final List<JButton> groupButtons = new ArrayList<>();
 
+  private final GridBagConstraints gbc = new GridBagConstraints();
+
   /**
    * Constructs a new sidebar panel for the client-side app.
    */
-  public SidebarPanel(final AppScreen app) {
-    this.app = app;
+  public SidebarPanel() {
     setup();
     setupActions();
     setupHooks();
@@ -47,18 +45,27 @@ public final class SidebarPanel extends JPanel {
     l.hoz(l.trailingPara().comp(addButton).comp(scrollPane));
     l.ver(l.seq().comp(addButton).gap(8).comp(scrollPane));
 
+    gbc.gridx     = 0;
+    gbc.gridwidth = GridBagConstraints.REMAINDER;
+    gbc.fill      = GridBagConstraints.HORIZONTAL;
+    gbc.anchor    = GridBagConstraints.PAGE_START;
+
     scrollPane.setMinimumSize(new Dimension(100, 800));
-    groupsPanel.setLayout(new BoxLayout(groupsPanel, BoxLayout.Y_AXIS));
+    groupsPanel.setLayout(new GridBagLayout());
     groupButtons.add(
         Components.button("Public Chat").icon(Icon.PUBLIC, 16).build());
-    groupsPanel.add(groupButtons.getFirst());
+    groupsPanel.add(groupButtons.getFirst(), gbc);
   }
 
   private void setupActions() {
     addButton.addActionListener(e -> {
       final var frame = AppContext.getFrame();
       final String newMembers = JOptionPane.showInputDialog(frame.getFrame(),
-          "Type usernames of members to add to group");
+          "Type usernames of members to add to group, separated by spaces");
+      if (newMembers == null) {
+        return;
+      }
+
       final var usernames = newMembers.split(" ");
 
       final var regex  = Pattern.compile("[A-Za-z-_][A-Za-z-_0-9]+");
@@ -104,6 +111,8 @@ public final class SidebarPanel extends JPanel {
       resetButtonStates();
       groupButtons.getFirst().setEnabled(false);
     });
+
+    groupButtons.getFirst().doClick();
   }
 
   private void setupHooks() {
@@ -120,12 +129,16 @@ public final class SidebarPanel extends JPanel {
       final var groupId   = split[i];
       final var groupData = rest.query("getgroup " + groupId);
 
+      // Retrieve group chat's data
       final var groupChat = new GroupChat();
       groupChat.setUuid(UUID.fromString(groupId));
       groupChat.setMembers(Arrays.stream(groupData.split(" "))
           .skip(1)
           .collect(Collectors.toSet()));
       AppContext.getGroupRepository().addGroupChat(groupChat);
+
+      // Retrieve group chat's message history.
+      rest.query("history " + groupId);
     }
   }
 
@@ -146,10 +159,12 @@ public final class SidebarPanel extends JPanel {
       btn.setEnabled(false);
     });
 
-    groupButtons.add(btn);
-    groupsPanel.add(btn);
-    groupsPanel.revalidate();
-    groupsPanel.repaint();
+    SwingUtilities.invokeLater(() -> {
+      groupButtons.add(btn);
+      groupsPanel.add(btn, gbc);
+      groupsPanel.revalidate();
+      groupsPanel.repaint();
+    });
   }
 
 }

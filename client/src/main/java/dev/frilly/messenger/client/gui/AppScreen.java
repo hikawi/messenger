@@ -11,8 +11,8 @@ import javax.swing.*;
  */
 public final class AppScreen extends JPanel {
 
-  private final SidebarPanel  sidebar  = new SidebarPanel(this);
-  private final ChatViewPanel chatView = new ChatViewPanel(this);
+  private final SidebarPanel  sidebar  = new SidebarPanel();
+  private final ChatViewPanel chatView = new ChatViewPanel();
 
   private final JSplitPane splitPane = new JSplitPane();
 

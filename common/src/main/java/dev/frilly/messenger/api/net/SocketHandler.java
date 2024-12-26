@@ -8,6 +8,7 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -53,11 +54,17 @@ public final class SocketHandler extends Thread {
         new InputStreamReader(socket.getInputStream()))
     ) {
       while (socket.isConnected()) {
-        final var res = input.readLine();
-        if (consumer == null) {
-          continue;
+        try {
+          final var res = input.readLine();
+          if (consumer == null) {
+            continue;
+          }
+          consumer.accept(res);
+        } catch (SocketException ex) {
+          System.out.println("Pipe is broken. Closing...");
+          close();
+          return;
         }
-        consumer.accept(res);
       }
     }
 

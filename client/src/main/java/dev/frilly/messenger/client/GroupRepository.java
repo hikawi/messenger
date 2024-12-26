@@ -38,6 +38,21 @@ public final class GroupRepository {
   }
 
   /**
+   * Checks if the group is registered.
+   *
+   * @param str the string
+   *
+   * @return the group
+   */
+  public boolean hasGroup(final String str) {
+    try {
+      return groupChats.containsKey(UUID.fromString(str));
+    } catch (IllegalArgumentException ex) {
+      return false;
+    }
+  }
+
+  /**
    * Retrieves a collection view of all group chats.
    *
    * @return the group chats.

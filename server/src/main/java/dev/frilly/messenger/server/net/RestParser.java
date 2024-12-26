@@ -1,5 +1,6 @@
 package dev.frilly.messenger.server.net;
 
+import dev.frilly.messenger.api.data.ChatMessage;
 import dev.frilly.messenger.api.net.SocketHandler;
 import dev.frilly.messenger.server.ServerContext;
 
@@ -39,6 +40,7 @@ public final class RestParser {
       return;
     }
 
+    System.out.println("Received command " + cmd);
     switch (args[0].toLowerCase()) {
       case "login":
         handleLogin(args);
@@ -60,6 +62,9 @@ public final class RestParser {
         break;
       case "getgroups":
         handleGetGroups(args);
+        break;
+      case "history":
+        handleHistory(args);
         break;
       default:
         break;
@@ -114,10 +119,23 @@ public final class RestParser {
     final var group    = args[2];
     final var content = String.join(" ",
         Arrays.copyOfRange(args, 3, args.length));
+
+    final var msg = new ChatMessage();
+    msg.setUsername(username);
+    msg.setGroupName(group);
+    msg.setContent(content);
+    msg.setNow();
+
+    // Don't save public history.
+    if (!group.equals("public")) {
+      MessagesController.saveMessage(msg);
+    }
+
     socket.write("201 ok");
     final var sockets = ServerContext.getWsHandlers();
     sockets.forEach(s -> {
-      s.write("sendmessage %s %s %s".formatted(username, group, content));
+      s.write("sendmessage %s %s %d %s".formatted(username, group,
+          msg.getTimestamp(), content));
     });
   }
 
@@ -176,8 +194,33 @@ public final class RestParser {
     for (final var group : GroupsController.getGroupChatsOf(user)) {
       sb.append(" ").append(group.getUuid().toString());
     }
-    System.out.printf("Received getGroup commands for %s: %s\n", args[0], sb);
     socket.write(sb.toString());
+  }
+
+  private void handleHistory(final String[] args) {
+    if (args.length < 2) {
+      return;
+    }
+
+    final var group = GroupsController.getGroup(UUID.fromString(args[1]));
+    if (group.isEmpty()) {
+      socket.write("404 not found");
+      return;
+    }
+
+    socket.write("200 ok");
+    final var history = MessagesController.getHistory(args[1]);
+    final var wss     = ServerContext.getWsHandlers();
+    for (final var ws : wss) {
+      new Thread(() -> {
+        history.forEach(msg -> {
+          if (msg instanceof ChatMessage chat) {
+            ws.write("sendmessage %s %s %d %s".formatted(msg.getUsername(),
+                msg.getGroupName(), msg.getTimestamp(), chat.getContent()));
+          }
+        });
+      }).start();
+    }
   }
 
 }

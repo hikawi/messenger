@@ -4,7 +4,6 @@ import dev.frilly.messenger.api.Icon;
 import dev.frilly.messenger.api.component.Components;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import dev.frilly.messenger.client.AppContext;
-import dev.frilly.messenger.client.gui.AppScreen;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,8 +16,6 @@ import java.util.stream.Collectors;
  * The panel to view chat messages and a text field to send messages.
  */
 public final class ChatViewPanel extends JPanel {
-
-  private final AppScreen app;
 
   private final JLabel      groupName    = Components.label("public")
       .h4()
@@ -36,8 +33,10 @@ public final class ChatViewPanel extends JPanel {
       .rounded()
       .build();
 
-  public ChatViewPanel(final AppScreen app) {
-    this.app = app;
+  /**
+   * Creates a new panel instance to view chat messages.
+   */
+  public ChatViewPanel() {
     setup();
     setupActions();
     setupHook();
@@ -45,7 +44,9 @@ public final class ChatViewPanel extends JPanel {
 
   private void setup() {
     setupChatField();
-    messagesList.setLayout(new GridLayout(0, 1));
+    messagesList.setLayout(new BoxLayout(messagesList, BoxLayout.Y_AXIS));
+    scrollPane.setVerticalScrollBarPolicy(
+        ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
     this.setMinimumSize(new Dimension(800, 800));
 
     final var l = new LayoutBuilder(this).gaps();
@@ -101,7 +102,6 @@ public final class ChatViewPanel extends JPanel {
 
       final var groupRepo = AppContext.getGroupRepository();
       final var groupInst = groupRepo.getGroupChat(UUID.fromString(group));
-      System.out.println("Switching to group " + groupInst);
       groupName.setText(groupInst.getMembers()
           .stream()
           .map(mem -> mem.equals(AppContext.getUsername()) ? "You" : mem)
@@ -126,6 +126,8 @@ public final class ChatViewPanel extends JPanel {
     for (final var msg : messages) {
       messagesList.add(new ChatMessagePanel(msg));
     }
+    scrollPane.revalidate();
+    scrollPane.repaint();
   }
 
 }

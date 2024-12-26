@@ -63,6 +63,10 @@ public final class Entrypoint {
       FlatMacLightLaf.setup();
       final var frame = new ApplicationFrame("Messenger");
       AppContext.setFrame(frame);
+      frame.addCloseHook(() -> {
+        restHandler.close();
+        wsHandler.close();
+      });
 
       final var loginScreen = new LoginScreen();
       frame.push(loginScreen);
@@ -71,20 +75,27 @@ public final class Entrypoint {
   }
 
   private static void handleSendMessage(final String[] args) {
-    if (args.length < 4) {
+    if (args.length < 5) {
       return;
     }
 
-    final var username = args[1];
-    final var group    = args[2];
+    final var username  = args[1];
+    final var group     = args[2];
+    final var timestamp = args[3];
     final var content = String.join(" ",
-        Arrays.copyOfRange(args, 3, args.length));
+        Arrays.copyOfRange(args, 4, args.length));
 
     final var message = new ChatMessage();
     message.setUsername(username);
     message.setGroupName(group);
+    message.setTimestamp(Long.parseLong(timestamp));
     message.setContent(content);
-    AppContext.getMessageRepository().addMessage(message);
+
+    // Only accept messages that are in my groups or public.
+    if (group.equals("public") || AppContext.getGroupRepository()
+        .hasGroup(group)) {
+      AppContext.getMessageRepository().addMessage(message);
+    }
   }
 
   private static void handleNewGroup(final String[] args) {

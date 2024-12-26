@@ -71,6 +71,8 @@ public final class MessageRepository {
     messages.putIfAbsent(msg.getGroupName(), new ArrayList<>());
     messages.get(msg.getGroupName()).add(msg);
 
+    System.out.println(
+        "Received msg " + msg + " with current group " + currentGroup);
     if (onAddConsumer != null && msg.getGroupName().equals(getCurrentGroup())) {
       onAddConsumer.accept(msg);
     }

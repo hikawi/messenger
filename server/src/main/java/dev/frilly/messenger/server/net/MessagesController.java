@@ -73,6 +73,18 @@ public final class MessagesController {
   }
 
   /**
+   * Receives a list of messages.
+   *
+   * @param group the group to retrieve
+   *
+   * @return a list of message history.
+   */
+  public List<Message> getHistory(final String group) {
+    messages.putIfAbsent(group, new ArrayList<>());
+    return messages.get(group).stream().sorted().toList();
+  }
+
+  /**
    * Deletes a message.
    *
    * @param message the message
@@ -91,6 +103,10 @@ public final class MessagesController {
     dataFolder.mkdirs();
 
     for (final var entry : messages.entrySet()) {
+      if (entry.getValue().isEmpty()) {
+        continue;
+      }
+
       final var file = new File(dataFolder, entry.getKey() + ".bin");
       file.createNewFile();
 
