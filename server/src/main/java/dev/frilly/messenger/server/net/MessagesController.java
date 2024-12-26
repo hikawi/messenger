@@ -90,8 +90,12 @@ public final class MessagesController {
    * @param message the message
    */
   public void deleteMessage(final Message message) {
-    Optional.ofNullable(messages.get(message.getGroupName()))
-        .ifPresent(l -> l.remove(message));
+    final var msgs = messages.get(message.getGroupName());
+    if (msgs == null) {
+      return;
+    }
+
+    msgs.removeIf(node -> node.baseEquals(message));
   }
 
   /**

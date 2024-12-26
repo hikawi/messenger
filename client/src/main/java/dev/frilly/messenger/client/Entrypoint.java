@@ -50,6 +50,9 @@ public final class Entrypoint {
         case "sendmessage":
           handleSendMessage(cmdArgs);
           break;
+        case "deletemessage":
+          handleDeleteMessage(cmdArgs);
+          break;
         case "newgroup":
           handleNewGroup(cmdArgs);
           break;
@@ -96,6 +99,23 @@ public final class Entrypoint {
         .hasGroup(group)) {
       AppContext.getMessageRepository().addMessage(message);
     }
+  }
+
+  private static void handleDeleteMessage(final String[] args) {
+    if (args.length < 3) {
+      return;
+    }
+
+    final var username  = args[1];
+    final var group     = args[2];
+    final var timestamp = args[3];
+
+    final var msg = new ChatMessage();
+    msg.setUsername(username);
+    msg.setGroupName(group);
+    msg.setTimestamp(Long.parseLong(timestamp));
+
+    AppContext.getMessageRepository().deleteMessage(msg);
   }
 
   private static void handleNewGroup(final String[] args) {

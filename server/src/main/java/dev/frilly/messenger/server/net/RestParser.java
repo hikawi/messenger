@@ -1,6 +1,8 @@
 package dev.frilly.messenger.server.net;
 
 import dev.frilly.messenger.api.data.ChatMessage;
+import dev.frilly.messenger.api.data.FileMessage;
+import dev.frilly.messenger.api.data.Message;
 import dev.frilly.messenger.api.net.SocketHandler;
 import dev.frilly.messenger.server.ServerContext;
 
@@ -50,6 +52,12 @@ public final class RestParser {
         break;
       case "sendmessage":
         handleSendMessage(args);
+        break;
+      case "deletemessage":
+        handleDeleteMessage(args);
+        break;
+      case "sendfile":
+        handleSendFile(args);
         break;
       case "check":
         handleCheck(args);
@@ -137,6 +145,38 @@ public final class RestParser {
       s.write("sendmessage %s %s %d %s".formatted(username, group,
           msg.getTimestamp(), content));
     });
+  }
+
+  private void handleDeleteMessage(final String[] args) {
+    if (args.length < 4) {
+      return;
+    }
+
+    final var user      = args[1];
+    final var group     = args[2];
+    final var timestamp = args[3];
+
+    final var msg = new Message();
+    msg.setUsername(user);
+    msg.setGroupName(group);
+    msg.setTimestamp(Long.parseLong(timestamp));
+    MessagesController.deleteMessage(msg);
+
+    socket.write("200 ok");
+    ServerContext.getWsHandlers().forEach(s -> {
+      s.write("deletemessage %s %s %s".formatted(user, group, timestamp));
+    });
+  }
+
+  private void handleSendFile(final String[] args) {
+    if (args.length < 2) {
+      return;
+    }
+
+    final var name = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+
+    final var fileMsg = new FileMessage();
+    fileMsg.setFileName(name);
   }
 
   private void handleCheck(final String[] args) {

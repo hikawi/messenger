@@ -1,6 +1,7 @@
 package dev.frilly.messenger.client;
 
 import dev.frilly.messenger.api.data.ChatMessage;
+import dev.frilly.messenger.api.data.Message;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +14,7 @@ import java.util.function.Consumer;
  */
 public final class MessageRepository {
 
-  private final Map<String, List<ChatMessage>> messages = new HashMap<>();
+  private final Map<String, List<Message>> messages = new HashMap<>();
 
   @Getter
   private String currentGroup = "public";
@@ -23,7 +24,11 @@ public final class MessageRepository {
 
   @Getter
   @Setter
-  private Consumer<ChatMessage> onAddConsumer;
+  private Consumer<Message> onAddConsumer;
+
+  @Getter
+  @Setter
+  private Consumer<Message> onDeleteConsumer;
 
   /**
    * Sets the new current group.
@@ -67,7 +72,7 @@ public final class MessageRepository {
    *
    * @param msg the message
    */
-  public void addMessage(final ChatMessage msg) {
+  public void addMessage(final Message msg) {
     messages.putIfAbsent(msg.getGroupName(), new ArrayList<>());
     messages.get(msg.getGroupName()).add(msg);
 
@@ -79,13 +84,31 @@ public final class MessageRepository {
   }
 
   /**
+   * Deletes a message from the repository.
+   *
+   * @param msg the message
+   */
+  public void deleteMessage(final Message msg) {
+    final var msgs = messages.get(msg.getGroupName());
+    if (msgs == null) {
+      return;
+    }
+
+    msgs.removeIf(node -> node.baseEquals(msg));
+    if (onDeleteConsumer != null && msg.getGroupName()
+        .equals(getCurrentGroup())) {
+      onDeleteConsumer.accept(msg);
+    }
+  }
+
+  /**
    * Retrieves a collection view of all messages within a group.
    *
    * @param group the group
    *
    * @return the list of messages
    */
-  public List<ChatMessage> getMessages(final String group) {
+  public List<Message> getMessages(final String group) {
     if (!messages.containsKey(group)) {
       return List.of();
     }

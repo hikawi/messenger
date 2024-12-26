@@ -2,6 +2,7 @@ package dev.frilly.messenger.client.components;
 
 import dev.frilly.messenger.api.Icon;
 import dev.frilly.messenger.api.component.Components;
+import dev.frilly.messenger.api.data.ChatMessage;
 import dev.frilly.messenger.api.gui.LayoutBuilder;
 import dev.frilly.messenger.client.AppContext;
 
@@ -24,6 +25,10 @@ public final class ChatViewPanel extends JPanel {
   private final JScrollPane scrollPane   = new JScrollPane(messagesList);
 
   private final JPanel     chatField  = new JPanel();
+  private final JButton    fileButton = Components.button("")
+      .icon(Icon.FILE, 12)
+      .rounded()
+      .build();
   private final JTextField textField  = Components.textField()
       .showClear()
       .placeholder("Send a message...")
@@ -85,7 +90,9 @@ public final class ChatViewPanel extends JPanel {
 
   private void setupHook() {
     AppContext.getMessageRepository().setOnAddConsumer(msg -> {
-      messagesList.add(new ChatMessagePanel(msg));
+      if (msg instanceof ChatMessage chat) {
+        messagesList.add(new ChatMessagePanel(chat));
+      }
       scrollPane.revalidate();
       scrollPane.repaint();
 
@@ -108,14 +115,22 @@ public final class ChatViewPanel extends JPanel {
           .collect(Collectors.joining(", ")));
       pullChatMessages(groupInst.getUuid().toString());
     });
+
+    AppContext.getMessageRepository()
+        .setOnDeleteConsumer(msg -> pullChatMessages(msg.getGroupName()));
   }
 
   private void setupChatField() {
     textField.setPreferredSize(new Dimension(700, 20));
     final var l = new LayoutBuilder(chatField).gaps();
-    l.hoz(l.seq().comp(textField).gap(4).comp(sendButton));
-    l.ver(l.basePara().comp(textField).comp(sendButton));
-    l.linkY(textField, sendButton);
+    l.hoz(l.seq()
+        .comp(fileButton)
+        .gap(4)
+        .comp(textField)
+        .gap(4)
+        .comp(sendButton));
+    l.ver(l.basePara().comp(fileButton).comp(textField).comp(sendButton));
+    l.linkY(textField, sendButton, fileButton);
   }
 
   private void pullChatMessages(final String groupId) {
@@ -124,7 +139,9 @@ public final class ChatViewPanel extends JPanel {
     final var messages = repo.getMessages(groupId);
 
     for (final var msg : messages) {
-      messagesList.add(new ChatMessagePanel(msg));
+      if (msg instanceof ChatMessage chat) {
+        messagesList.add(new ChatMessagePanel(chat));
+      }
     }
     scrollPane.revalidate();
     scrollPane.repaint();

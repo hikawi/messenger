@@ -25,4 +25,9 @@ public sealed class Message implements Comparable<Message>
     return Long.compare(timestamp, o.timestamp);
   }
 
+  public boolean baseEquals(Message o) {
+    return o.username.equals(username) && o.groupName.equals(
+        groupName) && o.timestamp == timestamp;
+  }
+
 }
